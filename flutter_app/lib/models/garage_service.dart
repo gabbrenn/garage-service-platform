@@ -15,14 +15,23 @@ class GarageService {
     required this.createdAt,
   });
 
-  factory GarageService.fromJson(Map<String, dynamic> json) {
+  // Safe JSON parsing with null checks and fallbacks
+  factory GarageService.fromJson(Map<String, dynamic>? json) {
+    if (json == null) {
+      return GarageService.fallback();
+    }
+
     return GarageService(
-      id: json['id'],
-      name: json['name'],
-      description: json['description'],
-      price: json['price'].toDouble(),
-      estimatedDurationMinutes: json['estimatedDurationMinutes'],
-      createdAt: DateTime.parse(json['createdAt']),
+      id: json['id'] is int ? json['id'] : int.tryParse(json['id'].toString()) ?? 0,
+      name: json['name']?.toString() ?? 'Unknown Service',
+      description: json['description']?.toString(),
+      price: json['price'] != null ? (json['price'] as num).toDouble() : 0.0,
+      estimatedDurationMinutes: json['estimatedDurationMinutes'] != null
+          ? (json['estimatedDurationMinutes'] as num).toInt()
+          : null,
+      createdAt: json['createdAt'] != null
+          ? DateTime.tryParse(json['createdAt'].toString()) ?? DateTime.now()
+          : DateTime.now(),
     );
   }
 
@@ -35,6 +44,18 @@ class GarageService {
       'estimatedDurationMinutes': estimatedDurationMinutes,
       'createdAt': createdAt.toIso8601String(),
     };
+  }
+
+  // Fallback instance in case of null or missing data
+  factory GarageService.fallback() {
+    return GarageService(
+      id: 0,
+      name: 'Unknown Service',
+      description: null,
+      price: 0.0,
+      estimatedDurationMinutes: null,
+      createdAt: DateTime.now(),
+    );
   }
 
   String get formattedPrice => '\$${price.toStringAsFixed(2)}';

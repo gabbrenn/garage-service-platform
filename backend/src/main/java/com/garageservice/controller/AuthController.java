@@ -38,9 +38,17 @@ public class AuthController {
 
     @PostMapping("/signin")
     public ResponseEntity<?> authenticateUser(@Valid @RequestBody AuthRequest loginRequest) {
-        Authentication authentication = authenticationManager.authenticate(
+        System.out.println("Login attempt: "+ loginRequest.getEmail());
+        Authentication authentication;
+        try{
+            authentication = authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(loginRequest.getEmail(), loginRequest.getPassword()));
-
+        }catch(Exception e){
+            e.printStackTrace();
+            return ResponseEntity
+                    .badRequest()
+                    .body(Map.of("message", "Error: Invalid email or password"));
+        }
         SecurityContextHolder.getContext().setAuthentication(authentication);
         String jwt = jwtUtils.generateJwtToken(authentication);
 

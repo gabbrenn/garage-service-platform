@@ -7,9 +7,14 @@ import '../models/garage_service.dart';
 import '../models/service_request.dart';
 
 class ApiService {
-  static const String baseUrl = 'http://10.0.2.2:8080/api'; // Android emulator
-  // static const String baseUrl = 'http://localhost:8080/api'; // iOS simulator
-  
+  // Configure via: flutter run --dart-define=API_BASE_URL=http://10.0.2.2/api (Android emulator)
+  // or: flutter run -d windows --dart-define=API_BASE_URL=http://localhost/api
+  // static const String baseUrl = String.fromEnvironment(
+  //   'API_BASE_URL',
+  //   defaultValue: 'http://localhost/api',
+  // );
+  static const String baseUrl = 'https://0770836a8b7a.ngrok-free.app/api';
+
   static const FlutterSecureStorage _storage = FlutterSecureStorage();
 
   static Future<String?> getToken() async {
@@ -36,6 +41,7 @@ class ApiService {
   static Future<Map<String, dynamic>> login(String email, String password) async {
     final response = await http.post(
       Uri.parse('$baseUrl/auth/signin'),
+      // headers: await getHeaders(),
       headers: await getHeaders(),
       body: jsonEncode({
         'email': email,
@@ -48,7 +54,9 @@ class ApiService {
       await saveToken(data['token']);
       return data;
     } else {
-      throw Exception('Login failed: ${response.body}');
+      // Throw a clear exception with backend message
+      final errorData = jsonDecode(response.body);
+      throw Exception('Login failed: ${errorData['message'] ?? response.body}');
     }
   }
 
@@ -152,6 +160,34 @@ class ApiService {
     }
   }
 
+  static Future<Garage> updateMyGarage({
+    required String name,
+    required String address,
+    required double latitude,
+    required double longitude,
+    String? description,
+    String? workingHours,
+  }) async {
+    final response = await http.put(
+      Uri.parse('$baseUrl/garages/my-garage'),
+      headers: await getHeaders(),
+      body: jsonEncode({
+        'name': name,
+        'address': address,
+        'latitude': latitude,
+        'longitude': longitude,
+        'description': description,
+        'workingHours': workingHours,
+      }),
+    );
+
+    if (response.statusCode == 200) {
+      return Garage.fromJson(jsonDecode(response.body));
+    } else {
+      throw Exception('Failed to update garage: ${response.body}');
+    }
+  }
+
   // Service endpoints
   static Future<GarageService> createService({
     required String name,
@@ -191,6 +227,46 @@ class ApiService {
     }
   }
 
+  static Future<GarageService> updateService({
+    required int serviceId,
+    String? name,
+    String? description,
+    double? price,
+    int? estimatedDurationMinutes,
+  }) async {
+    final body = <String, dynamic>{
+      'name': name,
+      'description': description,
+      'price': price,
+      'estimatedDurationMinutes': estimatedDurationMinutes,
+    }..removeWhere((key, value) => value == null);
+
+    final response = await http.put(
+      Uri.parse('$baseUrl/services/$serviceId'),
+      headers: await getHeaders(),
+      body: jsonEncode(body),
+    );
+
+    if (response.statusCode == 200) {
+      return GarageService.fromJson(jsonDecode(response.body));
+    } else {
+      throw Exception('Failed to update service: ${response.body}');
+    }
+  }
+
+  static Future<bool> deleteService(int serviceId) async {
+    final response = await http.delete(
+      Uri.parse('$baseUrl/services/$serviceId'),
+      headers: await getHeaders(),
+    );
+
+    if (response.statusCode == 200) {
+      return true;
+    } else {
+      throw Exception('Failed to delete service: ${response.body}');
+    }
+  }
+
   // Service Request endpoints
   static Future<ServiceRequest> createServiceRequest({
     required int garageId,
@@ -225,7 +301,7 @@ class ApiService {
       Uri.parse('$baseUrl/service-requests/my-requests'),
       headers: await getHeaders(),
     );
-
+  
     if (response.statusCode == 200) {
       final List<dynamic> data = jsonDecode(response.body);
       return data.map((json) => ServiceRequest.fromJson(json)).toList();
@@ -235,6 +311,8 @@ class ApiService {
   }
 
   static Future<List<ServiceRequest>> getGarageRequests() async {
+    print("Calling: $baseUrl/service-requests/garage-requests");
+    print("Headers: ${await getHeaders()}");
     final response = await http.get(
       Uri.parse('$baseUrl/service-requests/garage-requests'),
       headers: await getHeaders(),

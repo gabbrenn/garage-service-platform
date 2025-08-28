@@ -6,6 +6,8 @@ import '../../models/garage.dart';
 import '../../models/garage_service.dart';
 
 class ServiceRequestScreen extends StatefulWidget {
+  const ServiceRequestScreen({super.key});
+
   @override
   _ServiceRequestScreenState createState() => _ServiceRequestScreenState();
 }

@@ -4,6 +4,8 @@ import '../../providers/service_request_provider.dart';
 import '../../models/service_request.dart';
 
 class MyRequestsScreen extends StatefulWidget {
+  const MyRequestsScreen({super.key});
+
   @override
   _MyRequestsScreenState createState() => _MyRequestsScreenState();
 }
@@ -162,7 +164,7 @@ class _MyRequestsScreenState extends State<MyRequestsScreen> {
             ),
             SizedBox(height: 4),
             Text(
-              request.garage?.name ?? 'Unknown Garage',
+              request.garage?.name ?? request.garageName ?? 'Unknown Garage',
               style: TextStyle(
                 color: Colors.grey[600],
                 fontSize: 14,

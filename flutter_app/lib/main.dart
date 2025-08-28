@@ -14,12 +14,16 @@ import 'screens/garage/garage_home_screen.dart';
 import 'screens/garage/garage_setup_screen.dart';
 import 'screens/garage/add_service_screen.dart';
 import 'screens/garage/service_requests_screen.dart';
+import 'screens/garage/manage_services_screen.dart';
+import 'screens/garage/edit_garage_screen.dart';
 
 void main() {
   runApp(MyApp());
 }
 
 class MyApp extends StatelessWidget {
+  const MyApp({super.key});
+
   @override
   Widget build(BuildContext context) {
     return MultiProvider(
@@ -47,6 +51,8 @@ class MyApp extends StatelessWidget {
           '/garage-setup': (context) => GarageSetupScreen(),
           '/add-service': (context) => AddServiceScreen(),
           '/service-requests': (context) => ServiceRequestsScreen(),
+          '/manage-services': (context) => ManageServicesScreen(),
+          '/edit-garage': (context) => EditGarageScreen(),
         },
       ),
     );

@@ -142,6 +142,89 @@ class GarageProvider with ChangeNotifier {
     }
   }
 
+  Future<bool> updateMyGarage({
+    required String name,
+    required String address,
+    required double latitude,
+    required double longitude,
+    String? description,
+    String? workingHours,
+  }) async {
+    try {
+      setLoading(true);
+      setError(null);
+
+      final updated = await ApiService.updateMyGarage(
+        name: name,
+        address: address,
+        latitude: latitude,
+        longitude: longitude,
+        description: description,
+        workingHours: workingHours,
+      );
+      _myGarage = updated;
+
+      setLoading(false);
+      return true;
+    } catch (e) {
+      setError(e.toString());
+      setLoading(false);
+      return false;
+    }
+  }
+
+  Future<bool> updateService({
+    required int serviceId,
+    String? name,
+    String? description,
+    double? price,
+    int? estimatedDurationMinutes,
+  }) async {
+    try {
+      setLoading(true);
+      setError(null);
+
+      final updated = await ApiService.updateService(
+        serviceId: serviceId,
+        name: name,
+        description: description,
+        price: price,
+        estimatedDurationMinutes: estimatedDurationMinutes,
+      );
+
+      final idx = _myServices.indexWhere((s) => s.id == serviceId);
+      if (idx != -1) {
+        _myServices[idx] = updated;
+      }
+
+      setLoading(false);
+      return true;
+    } catch (e) {
+      setError(e.toString());
+      setLoading(false);
+      return false;
+    }
+  }
+
+  Future<bool> deleteService(int serviceId) async {
+    try {
+      setLoading(true);
+      setError(null);
+
+      final ok = await ApiService.deleteService(serviceId);
+      if (ok) {
+        _myServices.removeWhere((s) => s.id == serviceId);
+      }
+
+      setLoading(false);
+      return ok;
+    } catch (e) {
+      setError(e.toString());
+      setLoading(false);
+      return false;
+    }
+  }
+
   void clearError() {
     _error = null;
     notifyListeners();

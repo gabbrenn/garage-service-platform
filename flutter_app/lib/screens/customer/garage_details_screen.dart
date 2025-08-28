@@ -5,6 +5,8 @@ import '../../models/garage.dart';
 import '../../models/garage_service.dart';
 
 class GarageDetailsScreen extends StatefulWidget {
+  const GarageDetailsScreen({super.key});
+
   @override
   _GarageDetailsScreenState createState() => _GarageDetailsScreenState();
 }

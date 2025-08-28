@@ -4,6 +4,8 @@ import '../../providers/service_request_provider.dart';
 import '../../models/service_request.dart';
 
 class ServiceRequestsScreen extends StatefulWidget {
+  const ServiceRequestsScreen({super.key});
+
   @override
   _ServiceRequestsScreenState createState() => _ServiceRequestsScreenState();
 }
@@ -135,14 +137,16 @@ class _ServiceRequestsScreenState extends State<ServiceRequestsScreen> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        request.customer?.fullName ?? 'Unknown Customer',
+                        (request.customer?.fullName ?? request.customerName ?? 'Unknown Customer'),
                         style: TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.bold,
                         ),
                       ),
                       Text(
-                        request.customer?.phoneNumber ?? 'No phone',
+                        (request.customer?.phoneNumber?.isNotEmpty == true)
+                            ? request.customer!.phoneNumber
+                            : (request.customerPhone ?? 'No phone'),
                         style: TextStyle(
                           color: Colors.grey[600],
                           fontSize: 14,
@@ -222,8 +226,11 @@ class _ServiceRequestsScreenState extends State<ServiceRequestsScreen> {
                 SizedBox(width: 4),
                 Expanded(
                   child: Text(
-                    request.customerAddress ?? 
-                    'Lat: ${request.customerLatitude.toStringAsFixed(4)}, Lng: ${request.customerLongitude.toStringAsFixed(4)}',
+                    (request.customerAddress != null && request.customerAddress!.trim().isNotEmpty)
+                        ? request.customerAddress!
+                        : ((request.customerLatitude != 0.0 || request.customerLongitude != 0.0)
+                            ? 'Lat: ${request.customerLatitude.toStringAsFixed(4)}, Lng: ${request.customerLongitude.toStringAsFixed(4)}'
+                            : 'Location not provided'),
                     style: TextStyle(color: Colors.grey[600]),
                   ),
                 ),

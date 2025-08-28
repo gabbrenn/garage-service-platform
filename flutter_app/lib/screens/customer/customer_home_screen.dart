@@ -7,6 +7,8 @@ import '../../providers/garage_provider.dart';
 import '../../models/garage.dart';
 
 class CustomerHomeScreen extends StatefulWidget {
+  const CustomerHomeScreen({super.key});
+
   @override
   _CustomerHomeScreenState createState() => _CustomerHomeScreenState();
 }

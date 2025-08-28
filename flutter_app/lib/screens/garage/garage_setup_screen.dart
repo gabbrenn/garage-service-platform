@@ -5,6 +5,8 @@ import 'package:permission_handler/permission_handler.dart';
 import '../../providers/garage_provider.dart';
 
 class GarageSetupScreen extends StatefulWidget {
+  const GarageSetupScreen({super.key});
+
   @override
   _GarageSetupScreenState createState() => _GarageSetupScreenState();
 }

@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:garage_service_app/models/service_request.dart';
 import 'package:provider/provider.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/garage_provider.dart';
 import '../../providers/service_request_provider.dart';
 
 class GarageHomeScreen extends StatefulWidget {
+  const GarageHomeScreen({super.key});
+
   @override
   _GarageHomeScreenState createState() => _GarageHomeScreenState();
 }
@@ -240,10 +243,10 @@ class _GarageHomeScreenState extends State<GarageHomeScreen> {
               Expanded(
                 child: ElevatedButton.icon(
                   onPressed: () {
-                    Navigator.pushNamed(context, '/add-service');
+                    Navigator.pushNamed(context, '/manage-services');
                   },
-                  icon: Icon(Icons.add, color: Colors.white),
-                  label: Text('Add Service', style: TextStyle(color: Colors.white)),
+                  icon: Icon(Icons.design_services, color: Colors.white),
+                  label: Text('Manage Services', style: TextStyle(color: Colors.white)),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.blue,
                     padding: EdgeInsets.symmetric(vertical: 12),
@@ -257,12 +260,50 @@ class _GarageHomeScreenState extends State<GarageHomeScreen> {
               Expanded(
                 child: ElevatedButton.icon(
                   onPressed: () {
+                    Navigator.pushNamed(context, '/edit-garage');
+                  },
+                  icon: Icon(Icons.store_mall_directory, color: Colors.white),
+                  label: Text('Edit Profile', style: TextStyle(color: Colors.white)),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.teal,
+                    padding: EdgeInsets.symmetric(vertical: 12),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+          SizedBox(height: 12),
+          Row(
+            children: [
+              Expanded(
+                child: ElevatedButton.icon(
+                  onPressed: () {
                     Navigator.pushNamed(context, '/service-requests');
                   },
                   icon: Icon(Icons.inbox, color: Colors.white),
                   label: Text('View Requests', style: TextStyle(color: Colors.white)),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.orange,
+                    padding: EdgeInsets.symmetric(vertical: 12),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                ),
+              ),
+              SizedBox(width: 12),
+              Expanded(
+                child: ElevatedButton.icon(
+                  onPressed: () {
+                    Navigator.pushNamed(context, '/add-service');
+                  },
+                  icon: Icon(Icons.add, color: Colors.white),
+                  label: Text('Add Service', style: TextStyle(color: Colors.white)),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.indigo,
                     padding: EdgeInsets.symmetric(vertical: 12),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12),

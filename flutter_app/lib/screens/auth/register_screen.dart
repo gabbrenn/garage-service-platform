@@ -4,6 +4,8 @@ import '../../providers/auth_provider.dart';
 import '../../models/user.dart';
 
 class RegisterScreen extends StatefulWidget {
+  const RegisterScreen({super.key});
+
   @override
   _RegisterScreenState createState() => _RegisterScreenState();
 }

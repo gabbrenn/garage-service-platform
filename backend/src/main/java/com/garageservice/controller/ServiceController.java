@@ -94,6 +94,35 @@ public class ServiceController {
         return ResponseEntity.ok(response);
     }
 
+    @PutMapping("/{serviceId}")
+    @PreAuthorize("hasRole('GARAGE_OWNER')")
+    public ResponseEntity<?> updateService(@PathVariable Long serviceId, @Valid @RequestBody ServiceRequest serviceRequest, Authentication authentication) {
+        UserPrincipal userPrincipal = (UserPrincipal) authentication.getPrincipal();
+        Optional<Garage> garage = garageRepository.findByUserId(userPrincipal.getId());
+
+        if (!garage.isPresent()) {
+            Map<String, String> resp = new HashMap<>();
+            resp.put("message", "No garage found for this user");
+            return ResponseEntity.badRequest().body(resp);
+        }
+
+        Optional<GarageService> service = garageServiceRepository.findById(serviceId);
+        if (!service.isPresent() || !service.get().getGarage().getId().equals(garage.get().getId())) {
+            Map<String, String> resp = new HashMap<>();
+            resp.put("message", "Service not found or not owned by this garage");
+            return ResponseEntity.badRequest().body(resp);
+        }
+
+        GarageService existing = service.get();
+        if (serviceRequest.getName() != null) existing.setName(serviceRequest.getName());
+        existing.setDescription(serviceRequest.getDescription());
+        if (serviceRequest.getPrice() != null) existing.setPrice(serviceRequest.getPrice());
+        existing.setEstimatedDurationMinutes(serviceRequest.getEstimatedDurationMinutes());
+
+        GarageService updated = garageServiceRepository.save(existing);
+        return ResponseEntity.ok(updated);
+    }
+
     public static class ServiceRequest {
         private String name;
         private String description;

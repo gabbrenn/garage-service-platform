@@ -75,13 +75,14 @@ class ServiceRequestProvider with ChangeNotifier {
       setError(null);
 
       _garageRequests = await ApiService.getGarageRequests();
-      
+
       setLoading(false);
     } catch (e) {
       setError(e.toString());
       setLoading(false);
     }
   }
+
 
   Future<bool> respondToRequest({
     required int requestId,

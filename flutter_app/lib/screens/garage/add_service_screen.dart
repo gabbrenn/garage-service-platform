@@ -3,6 +3,8 @@ import 'package:provider/provider.dart';
 import '../../providers/garage_provider.dart';
 
 class AddServiceScreen extends StatefulWidget {
+  const AddServiceScreen({super.key});
+
   @override
   _AddServiceScreenState createState() => _AddServiceScreenState();
 }

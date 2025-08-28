@@ -83,6 +83,30 @@ public class GarageController {
         }
     }
 
+    @PutMapping("/my-garage")
+    @PreAuthorize("hasRole('GARAGE_OWNER')")
+    public ResponseEntity<?> updateMyGarage(@Valid @RequestBody GarageRequest garageRequest, Authentication authentication) {
+        UserPrincipal userPrincipal = (UserPrincipal) authentication.getPrincipal();
+        Optional<Garage> garageOpt = garageRepository.findByUserId(userPrincipal.getId());
+
+        if (!garageOpt.isPresent()) {
+            Map<String, String> response = new HashMap<>();
+            response.put("message", "No garage found for this user");
+            return ResponseEntity.badRequest().body(response);
+        }
+
+        Garage garage = garageOpt.get();
+        garage.setName(garageRequest.getName());
+        garage.setAddress(garageRequest.getAddress());
+        garage.setLatitude(garageRequest.getLatitude());
+        garage.setLongitude(garageRequest.getLongitude());
+        garage.setDescription(garageRequest.getDescription());
+        garage.setWorkingHours(garageRequest.getWorkingHours());
+
+        Garage updated = garageRepository.save(garage);
+        return ResponseEntity.ok(updated);
+    }
+
     @GetMapping("/nearby")
     public ResponseEntity<List<Garage>> getNearbyGarages(
             @RequestParam Double latitude,

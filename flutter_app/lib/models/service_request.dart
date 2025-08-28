@@ -4,9 +4,26 @@ import 'user.dart';
 
 class ServiceRequest {
   final int id;
+
+  // Flattened customer info
+  final String? customerEmail;
+  final String? customerName;
+  final String? customerPhone;
+
+  // Flattened garage info
+  final String? garageName;
+  final String? garageAddress;
+  final String? garagePhone;
+
+  // Flattened service info
+  final String? serviceName;
+  final String? serviceDescription;
+  final double? servicePrice;
+
   final User? customer;
   final Garage? garage;
   final GarageService service;
+
   final double customerLatitude;
   final double customerLongitude;
   final String? customerAddress;
@@ -19,6 +36,15 @@ class ServiceRequest {
 
   ServiceRequest({
     required this.id,
+    this.customerEmail,
+    this.customerName,
+    this.customerPhone,
+    this.garageName,
+    this.garageAddress,
+    this.garagePhone,
+    this.serviceName,
+    this.serviceDescription,
+    this.servicePrice,
     this.customer,
     this.garage,
     required this.service,
@@ -34,41 +60,88 @@ class ServiceRequest {
   });
 
   factory ServiceRequest.fromJson(Map<String, dynamic> json) {
+    // Extract flattened fields
+    final String? flatCustomerEmail = json['customerEmail'] as String?;
+    final String? flatCustomerName = json['customerName'] as String?;
+    final String? flatCustomerPhone = json['customerPhone'] as String?;
+    final String? flatGarageName = json['garageName'] as String?;
+    final String? flatGarageAddress = json['garageAddress'] as String?;
+    final String? flatGaragePhone = json['garagePhone'] as String?;
+
+    // Split customer name into first/last
+    String firstName = 'Unknown';
+    String lastName = '';
+    if (flatCustomerName != null && flatCustomerName.trim().isNotEmpty) {
+      final parts = flatCustomerName.trim().split(' ');
+      firstName = parts.first;
+      if (parts.length > 1) {
+        lastName = parts.sublist(1).join(' ');
+      }
+    }
+
+    double parseDouble(dynamic v) {
+      if (v == null) return 0.0;
+      if (v is num) return v.toDouble();
+      return double.tryParse(v.toString()) ?? 0.0;
+    }
+
+    final double flatLat = parseDouble(json['customerLatitude']);
+    final double flatLng = parseDouble(json['customerLongitude']);
+
+    final created = DateTime.tryParse(json['createdAt']?.toString() ?? '') ?? DateTime.now();
+    final updated = DateTime.tryParse(json['updatedAt']?.toString() ?? '') ?? created;
+
     return ServiceRequest(
-      id: json['id'],
-      customer: json['customer'] != null ? User.fromJson(json['customer']) : null,
-      garage: json['garage'] != null ? Garage.fromJson(json['garage']) : null,
-      service: GarageService.fromJson(json['service']),
-      customerLatitude: json['customerLatitude'].toDouble(),
-      customerLongitude: json['customerLongitude'].toDouble(),
+      id: json['id'] ?? 0,
+      customerEmail: flatCustomerEmail,
+      customerName: flatCustomerName,
+      customerPhone: flatCustomerPhone,
+      garageName: flatGarageName,
+      garageAddress: flatGarageAddress,
+      garagePhone: flatGaragePhone,
+      serviceName: json['serviceName'] as String?,
+      serviceDescription: json['serviceDescription'] as String?,
+      servicePrice: json['servicePrice'] != null ? (json['servicePrice'] as num).toDouble() : 0.0,
+      // Build lightweight nested objects from flattened fields so UI can render names/phones
+      customer: User(
+        id: 0,
+        firstName: firstName,
+        lastName: lastName,
+        email: flatCustomerEmail ?? '',
+        phoneNumber: flatCustomerPhone ?? '',
+        userType: UserType.CUSTOMER,
+        createdAt: created,
+      ),
+      garage: Garage(
+        id: 0,
+        name: flatGarageName ?? 'Unknown Garage',
+        address: flatGarageAddress ?? '',
+        latitude: 0.0,
+        longitude: 0.0,
+        description: null,
+        workingHours: null,
+        createdAt: created,
+      ),
+      service: GarageService(
+        id: 0,
+        name: json['serviceName'] ?? 'Unknown Service',
+        description: json['serviceDescription'],
+        price: json['servicePrice'] != null ? (json['servicePrice'] as num).toDouble() : 0.0,
+        createdAt: created,
+      ),
+      customerLatitude: flatLat,
+      customerLongitude: flatLng,
       customerAddress: json['customerAddress'],
       description: json['description'],
       garageResponse: json['garageResponse'],
-      estimatedArrivalMinutes: json['estimatedArrivalMinutes'],
+      estimatedArrivalMinutes: json['estimatedArrivalMinutes'] != null ? (json['estimatedArrivalMinutes'] as num).toInt() : null,
       status: RequestStatus.values.firstWhere(
-        (e) => e.toString().split('.').last == json['status'],
+        (e) => e.toString().split('.').last == (json['status'] ?? 'PENDING'),
+        orElse: () => RequestStatus.PENDING,
       ),
-      createdAt: DateTime.parse(json['createdAt']),
-      updatedAt: DateTime.parse(json['updatedAt']),
+      createdAt: created,
+      updatedAt: updated,
     );
-  }
-
-  Map<String, dynamic> toJson() {
-    return {
-      'id': id,
-      'customer': customer?.toJson(),
-      'garage': garage?.toJson(),
-      'service': service.toJson(),
-      'customerLatitude': customerLatitude,
-      'customerLongitude': customerLongitude,
-      'customerAddress': customerAddress,
-      'description': description,
-      'garageResponse': garageResponse,
-      'estimatedArrivalMinutes': estimatedArrivalMinutes,
-      'status': status.toString().split('.').last,
-      'createdAt': createdAt.toIso8601String(),
-      'updatedAt': updatedAt.toIso8601String(),
-    };
   }
 
   String get statusText {

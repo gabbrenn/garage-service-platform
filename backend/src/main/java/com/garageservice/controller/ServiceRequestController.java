@@ -4,6 +4,7 @@ import com.garageservice.dto.ServiceRequestDto;
 import com.garageservice.model.Garage;
 import com.garageservice.model.GarageService;
 import com.garageservice.model.ServiceRequest;
+import com.garageservice.dto.ServiceRequestResponseDto;
 import com.garageservice.model.User;
 import com.garageservice.repository.GarageRepository;
 import com.garageservice.repository.GarageServiceRepository;
@@ -71,16 +72,62 @@ public class ServiceRequestController {
         );
 
         ServiceRequest savedRequest = serviceRequestRepository.save(serviceRequest);
-        return ResponseEntity.ok(savedRequest);
+        ServiceRequestResponseDto dto = new ServiceRequestResponseDto(
+            savedRequest.getId(),
+            savedRequest.getCustomer().getEmail(),
+            savedRequest.getCustomer().getFirstName() + " " + savedRequest.getCustomer().getLastName(),
+            savedRequest.getCustomer().getPhoneNumber(),
+            savedRequest.getGarage().getName(),
+            savedRequest.getGarage().getAddress(),
+            savedRequest.getGarage().getDescription(),
+            savedRequest.getService().getName(),
+            savedRequest.getService().getDescription(),
+            savedRequest.getService().getPrice(),
+            savedRequest.getDescription(),
+            savedRequest.getCreatedAt(),
+            savedRequest.getStatus() != null ? savedRequest.getStatus().name() : null,
+            savedRequest.getGarageResponse(),
+            savedRequest.getEstimatedArrivalMinutes(),
+            savedRequest.getCustomerAddress(),
+            savedRequest.getCustomerLatitude(),
+            savedRequest.getCustomerLongitude()
+        );
+        return ResponseEntity.ok(dto);
     }
 
     @GetMapping("/my-requests")
     @PreAuthorize("hasRole('CUSTOMER')")
-    public ResponseEntity<List<ServiceRequest>> getMyRequests(Authentication authentication) {
+    public ResponseEntity<List<ServiceRequestResponseDto>> getMyRequests(Authentication authentication) {
         UserPrincipal userPrincipal = (UserPrincipal) authentication.getPrincipal();
         List<ServiceRequest> requests = serviceRequestRepository.findByCustomerIdOrderByCreatedAtDesc(userPrincipal.getId());
-        return ResponseEntity.ok(requests);
+        
+        List<ServiceRequestResponseDto> dtoList = requests.stream().map(req -> 
+            new ServiceRequestResponseDto(
+                req.getId(),
+                req.getCustomer().getEmail(),
+                req.getCustomer().getFirstName() + " " + req.getCustomer().getLastName(),
+                req.getCustomer().getPhoneNumber(),
+                req.getGarage().getName(),
+                req.getGarage().getAddress(),
+                req.getGarage().getDescription(),
+                req.getService().getName(),
+                req.getService().getDescription(),
+                req.getService().getPrice(),
+                req.getDescription(),
+                req.getCreatedAt(),
+                req.getStatus() != null ? req.getStatus().name() : null,
+                req.getGarageResponse(),
+                req.getEstimatedArrivalMinutes(),
+                req.getCustomerAddress(),
+                req.getCustomerLatitude(),
+                req.getCustomerLongitude()
+            )
+        ).toList();
+
+        return ResponseEntity.ok(dtoList);
+        // return ResponseEntity.ok(requests);
     }
+    
 
     @GetMapping("/garage-requests")
     @PreAuthorize("hasRole('GARAGE_OWNER')")
@@ -95,7 +142,30 @@ public class ServiceRequestController {
         }
 
         List<ServiceRequest> requests = serviceRequestRepository.findByGarageIdOrderByCreatedAtDesc(garage.get().getId());
-        return ResponseEntity.ok(requests);
+        List<ServiceRequestResponseDto> dtoList = requests.stream().map(req -> 
+            new ServiceRequestResponseDto(
+                req.getId(),
+                req.getCustomer().getEmail(),
+                req.getCustomer().getFirstName() + " " + req.getCustomer().getLastName(),
+                req.getCustomer().getPhoneNumber(),
+                req.getGarage().getName(),
+                req.getGarage().getAddress(),
+                req.getGarage().getDescription(),
+                req.getService().getName(),
+                req.getService().getDescription(),
+                req.getService().getPrice(),
+                req.getDescription(),
+                req.getCreatedAt(),
+                req.getStatus() != null ? req.getStatus().name() : null,
+                req.getGarageResponse(),
+                req.getEstimatedArrivalMinutes(),
+                req.getCustomerAddress(),
+                req.getCustomerLatitude(),
+                req.getCustomerLongitude()
+            )
+        ).toList();
+
+        return ResponseEntity.ok(dtoList);
     }
 
     @PutMapping("/{requestId}/respond")
@@ -123,7 +193,27 @@ public class ServiceRequestController {
         request.setEstimatedArrivalMinutes(responseDto.getEstimatedArrivalMinutes());
 
         ServiceRequest updatedRequest = serviceRequestRepository.save(request);
-        return ResponseEntity.ok(updatedRequest);
+        ServiceRequestResponseDto dto = new ServiceRequestResponseDto(
+            updatedRequest.getId(),
+            updatedRequest.getCustomer().getEmail(),
+            updatedRequest.getCustomer().getFirstName() + " " + updatedRequest.getCustomer().getLastName(),
+            updatedRequest.getCustomer().getPhoneNumber(),
+            updatedRequest.getGarage().getName(),
+            updatedRequest.getGarage().getAddress(),
+            updatedRequest.getGarage().getDescription(),
+            updatedRequest.getService().getName(),
+            updatedRequest.getService().getDescription(),
+            updatedRequest.getService().getPrice(),
+            updatedRequest.getDescription(),
+            updatedRequest.getCreatedAt(),
+            updatedRequest.getStatus() != null ? updatedRequest.getStatus().name() : null,
+            updatedRequest.getGarageResponse(),
+            updatedRequest.getEstimatedArrivalMinutes(),
+            updatedRequest.getCustomerAddress(),
+            updatedRequest.getCustomerLatitude(),
+            updatedRequest.getCustomerLongitude()
+        );
+        return ResponseEntity.ok(dto);
     }
 
     public static class ResponseDto {

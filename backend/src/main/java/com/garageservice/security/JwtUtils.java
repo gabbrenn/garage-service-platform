@@ -11,16 +11,21 @@ import org.springframework.stereotype.Component;
 
 import java.security.Key;
 import java.util.Date;
+import javax.crypto.SecretKey;
 
 @Component
 public class JwtUtils {
     private static final Logger logger = LoggerFactory.getLogger(JwtUtils.class);
 
-    @Value("${app.jwtSecret:mySecretKey}")
+    @Value("${app.jwtSecret}")
     private String jwtSecret;
 
     @Value("${app.jwtExpirationMs:86400000}")
     private int jwtExpirationMs;
+
+    private SecretKey key(){
+        return Keys.hmacShaKeyFor(jwtSecret.getBytes());
+    }
 
     public String generateJwtToken(Authentication authentication) {
         UserPrincipal userPrincipal = (UserPrincipal) authentication.getPrincipal();
@@ -33,9 +38,6 @@ public class JwtUtils {
                 .compact();
     }
 
-    private Key key() {
-        return Keys.hmacShaKeyFor(Decoders.BASE64.decode(jwtSecret));
-    }
 
     public String getUserNameFromJwtToken(String token) {
         return Jwts.parserBuilder().setSigningKey(key()).build()
