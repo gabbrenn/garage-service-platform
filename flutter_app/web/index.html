@@ -20,11 +20,15 @@
   <meta content="IE=Edge" http-equiv="X-UA-Compatible">
   <meta name="description" content="A new Flutter project.">
   <!-- Google Maps API key injection (required for google_maps_flutter on web).
-    Prefer passing at run/build time:
-      flutter run -d chrome --dart-define=GOOGLE_MAPS_API_KEY=YOUR_KEY
-      flutter build web --dart-define=GOOGLE_MAPS_API_KEY=YOUR_KEY
-    Tooling or CI can also populate this meta. Do not commit real keys. -->
-  <meta name="google_maps_api_key" content="AIzaSyBSMC1p4tjP3YW_O8nZn9qtw-aHrFu7OUc">
+    IMPORTANT: Do NOT commit real keys.
+    Options to supply the key locally/CI:
+      1) Edit this meta content locally (not committed) for quick manual runs
+      2) Have CI/CD replace this value at deploy time
+      3) Serve the page with a script that sets this meta tag before Flutter boots
+    Note: The Flutter web plugin reads this meta to load the Maps JS.
+    For app's Directions REST calls, Dart code can also read:
+      --dart-define=GOOGLE_DIRECTIONS_API_KEY=YOUR_KEY -->
+  <meta name="google_maps_api_key" content="YOUR_GOOGLE_MAPS_API_KEY_HERE">
 
   <!-- iOS meta tags & icons -->
   <meta name="mobile-web-app-capable" content="yes">
