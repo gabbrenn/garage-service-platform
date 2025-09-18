@@ -44,6 +44,10 @@ public class User {
 
     private LocalDateTime createdAt;
 
+    // Password reset support
+    private String resetToken;
+    private LocalDateTime resetTokenExpiry;
+
     @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private Garage garage;
 
@@ -89,6 +93,12 @@ public class User {
 
     public LocalDateTime getCreatedAt() { return createdAt; }
     public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
+
+    public String getResetToken() { return resetToken; }
+    public void setResetToken(String resetToken) { this.resetToken = resetToken; }
+
+    public LocalDateTime getResetTokenExpiry() { return resetTokenExpiry; }
+    public void setResetTokenExpiry(LocalDateTime resetTokenExpiry) { this.resetTokenExpiry = resetTokenExpiry; }
 
     public Garage getGarage() { return garage; }
     public void setGarage(Garage garage) { this.garage = garage; }

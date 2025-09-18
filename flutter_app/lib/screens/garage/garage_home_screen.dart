@@ -4,6 +4,9 @@ import 'package:provider/provider.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/garage_provider.dart';
 import '../../providers/service_request_provider.dart';
+import '../../providers/notification_provider.dart';
+import '../../widgets/language_picker_sheet.dart';
+import '../../l10n/gen/app_localizations.dart';
 
 class GarageHomeScreen extends StatefulWidget {
   const GarageHomeScreen({super.key});
@@ -16,7 +19,9 @@ class _GarageHomeScreenState extends State<GarageHomeScreen> {
   @override
   void initState() {
     super.initState();
-    _loadData();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _loadData();
+    });
   }
 
   Future<void> _loadData() async {
@@ -35,104 +40,102 @@ class _GarageHomeScreenState extends State<GarageHomeScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final authProvider = Provider.of<AuthProvider>(context);
-    final garageProvider = Provider.of<GarageProvider>(context);
-    final serviceRequestProvider = Provider.of<ServiceRequestProvider>(context);
+    final loc = AppLocalizations.of(context);
+
+  final garageProvider = Provider.of<GarageProvider>(context);
 
     return Scaffold(
       appBar: AppBar(
-        title: Text('Garage Dashboard'),
+        title: Text(loc.garageDashboard),
         backgroundColor: Colors.blue,
         foregroundColor: Colors.white,
         actions: [
-          IconButton(
-            icon: Icon(Icons.refresh),
-            onPressed: _loadData,
+          Consumer<NotificationProvider>(
+            builder: (_, notif, __) => IconButton(
+              icon: Stack(children:[
+                const Icon(Icons.notifications),
+                if(notif.unreadCount>0) Positioned(
+                  right:0, top:0,
+                  child: Container(
+                    padding: const EdgeInsets.all(2),
+                    decoration: const BoxDecoration(color: Colors.red, shape: BoxShape.circle),
+                    constraints: const BoxConstraints(minWidth:16,minHeight:16),
+                    child: Center(child: Text('${notif.unreadCount}', style: const TextStyle(color: Colors.white, fontSize:10)))
+                  )
+                )
+              ]),
+              onPressed: () { Navigator.pushNamed(context, '/notifications').then((_) => notif.loadNotifications(forceRefresh: true)); },
+            ),
           ),
+          IconButton(icon: const Icon(Icons.language), tooltip: loc.language, onPressed: () { showLanguagePickerSheet(context); }),
+          IconButton(icon: const Icon(Icons.refresh), onPressed: _loadData),
           PopupMenuButton<String>(
-            onSelected: (value) {
+            onSelected: (value) async {
               if (value == 'logout') {
-                authProvider.logout();
-                Navigator.pushReplacementNamed(context, '/login');
+                final ok = await showDialog<bool>(
+                  context: context,
+                  builder: (ctx) => AlertDialog(
+                    title: Text(loc.logout),
+                    content: Text(loc.confirmLogoutMessage),
+                    actions: [
+                      TextButton(onPressed: () => Navigator.pop(ctx, false), child: Text(loc.cancel)),
+                      ElevatedButton(onPressed: () => Navigator.pop(ctx, true), child: Text(loc.logout)),
+                    ],
+                  ),
+                );
+                if (ok == true) {
+                  final authProvider = Provider.of<AuthProvider>(context, listen:false);
+                  await authProvider.logout(context);
+                  if (mounted) Navigator.pushReplacementNamed(context, '/login');
+                }
               }
             },
-            itemBuilder: (BuildContext context) => [
+            itemBuilder: (context) => [
               PopupMenuItem(
                 value: 'logout',
-                child: Row(
-                  children: [
-                    Icon(Icons.logout, color: Colors.grey[600]),
-                    SizedBox(width: 8),
-                    Text('Logout'),
-                  ],
-                ),
+                child: Row(children:[Icon(Icons.logout, color: Colors.grey[600]), const SizedBox(width:8), Text(loc.logout)])
               ),
             ],
           ),
         ],
       ),
       body: garageProvider.isLoading
-          ? Center(child: CircularProgressIndicator())
-          : garageProvider.myGarage == null
-              ? _buildNoGarageView()
-              : _buildGarageView(),
-      floatingActionButton: garageProvider.myGarage != null
-          ? FloatingActionButton(
-              onPressed: () {
-                Navigator.pushNamed(context, '/add-service');
-              },
-              backgroundColor: Colors.blue,
-              child: Icon(Icons.add, color: Colors.white),
-            )
-          : null,
+          ? const Center(child: CircularProgressIndicator())
+          : garageProvider.myGarage == null ? _buildNoGarageView() : _buildGarageView(),
+      floatingActionButton: garageProvider.myGarage != null ? FloatingActionButton(
+        onPressed: () { Navigator.pushNamed(context, '/add-service'); },
+        backgroundColor: Colors.blue,
+        child: const Icon(Icons.add, color: Colors.white),
+      ) : null,
     );
   }
 
   Widget _buildNoGarageView() {
+    final loc = AppLocalizations.of(context);
     return Center(
       child: Padding(
-        padding: EdgeInsets.all(24),
+        padding: const EdgeInsets.all(24),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(Icons.store, size: 100, color: Colors.grey),
-            SizedBox(height: 20),
-            Text(
-              'Set Up Your Garage',
-              style: TextStyle(
-                fontSize: 24,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            SizedBox(height: 10),
-            Text(
-              'Create your garage profile to start receiving service requests from customers.',
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                color: Colors.grey[600],
-                fontSize: 16,
-              ),
-            ),
-            SizedBox(height: 30),
+            const Icon(Icons.store, size:100, color: Colors.grey),
+            const SizedBox(height:20),
+            Text(loc.setUpYourGarage, style: const TextStyle(fontSize:24,fontWeight: FontWeight.bold)),
+            const SizedBox(height:10),
+            Text(loc.createGarageProfile, textAlign: TextAlign.center, style: TextStyle(color: Colors.grey[600], fontSize:16)),
+            const SizedBox(height:30),
             ElevatedButton(
               onPressed: () {
                 Navigator.pushNamed(context, '/garage-setup');
               },
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.blue,
-                padding: EdgeInsets.symmetric(horizontal: 32, vertical: 16),
+                padding: const EdgeInsets.symmetric(horizontal:32, vertical:16),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12),
                 ),
               ),
-              child: Text(
-                'Set Up Garage',
-                style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.white,
-                ),
-              ),
+              child: Text(loc.setUpGarageButton, style: const TextStyle(fontSize:16,fontWeight: FontWeight.bold,color: Colors.white)),
             ),
           ],
         ),
@@ -141,12 +144,13 @@ class _GarageHomeScreenState extends State<GarageHomeScreen> {
   }
 
   Widget _buildGarageView() {
+    final loc = AppLocalizations.of(context);
     final garageProvider = Provider.of<GarageProvider>(context);
     final serviceRequestProvider = Provider.of<ServiceRequestProvider>(context);
     final garage = garageProvider.myGarage!;
 
     return SingleChildScrollView(
-      padding: EdgeInsets.all(16),
+      padding: const EdgeInsets.all(16),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -155,7 +159,7 @@ class _GarageHomeScreenState extends State<GarageHomeScreen> {
             elevation: 4,
             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
             child: Padding(
-              padding: EdgeInsets.all(16),
+              padding: const EdgeInsets.all(16),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -218,7 +222,7 @@ class _GarageHomeScreenState extends State<GarageHomeScreen> {
             children: [
               Expanded(
                 child: _buildStatCard(
-                  'Services',
+                  loc.services,
                   garageProvider.myServices.length.toString(),
                   Icons.build,
                   Colors.blue,
@@ -227,7 +231,7 @@ class _GarageHomeScreenState extends State<GarageHomeScreen> {
               SizedBox(width: 12),
               Expanded(
                 child: _buildStatCard(
-                  'Requests',
+                  loc.requests,
                   serviceRequestProvider.garageRequests.length.toString(),
                   Icons.inbox,
                   Colors.orange,
@@ -245,11 +249,11 @@ class _GarageHomeScreenState extends State<GarageHomeScreen> {
                   onPressed: () {
                     Navigator.pushNamed(context, '/manage-services');
                   },
-                  icon: Icon(Icons.design_services, color: Colors.white),
-                  label: Text('Manage Services', style: TextStyle(color: Colors.white)),
+                  icon: const Icon(Icons.design_services, color: Colors.white),
+                  label: Text(loc.manageServices, style: const TextStyle(color: Colors.white)),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.blue,
-                    padding: EdgeInsets.symmetric(vertical: 12),
+                    padding: const EdgeInsets.symmetric(vertical:12),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12),
                     ),
@@ -260,13 +264,30 @@ class _GarageHomeScreenState extends State<GarageHomeScreen> {
               Expanded(
                 child: ElevatedButton.icon(
                   onPressed: () {
-                    Navigator.pushNamed(context, '/edit-garage');
+                    Navigator.pushNamed(context, '/service-requests');
                   },
-                  icon: Icon(Icons.store_mall_directory, color: Colors.white),
-                  label: Text('Edit Profile', style: TextStyle(color: Colors.white)),
+                  icon: const Icon(Icons.inbox, color: Colors.white),
+                  label: Text(loc.viewRequests, style: const TextStyle(color: Colors.white)),
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.teal,
-                    padding: EdgeInsets.symmetric(vertical: 12),
+                    backgroundColor: Colors.orange,
+                    padding: const EdgeInsets.symmetric(vertical:12),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                ),
+              ),
+              SizedBox(width: 12),
+              Expanded(
+                child: ElevatedButton.icon(
+                  onPressed: () {
+                    Navigator.pushNamed(context, '/add-service');
+                  },
+                  icon: const Icon(Icons.add, color: Colors.white),
+                  label: Text(loc.addService, style: const TextStyle(color: Colors.white)),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.indigo,
+                    padding: const EdgeInsets.symmetric(vertical:12),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12),
                     ),
@@ -281,13 +302,13 @@ class _GarageHomeScreenState extends State<GarageHomeScreen> {
               Expanded(
                 child: ElevatedButton.icon(
                   onPressed: () {
-                    Navigator.pushNamed(context, '/service-requests');
+                    Navigator.pushNamed(context, '/edit-garage');
                   },
-                  icon: Icon(Icons.inbox, color: Colors.white),
-                  label: Text('View Requests', style: TextStyle(color: Colors.white)),
+                  icon: const Icon(Icons.store_mall_directory, color: Colors.white),
+                  label: Text(loc.editProfile, style: const TextStyle(color: Colors.white)),
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.orange,
-                    padding: EdgeInsets.symmetric(vertical: 12),
+                    backgroundColor: Colors.teal,
+                    padding: const EdgeInsets.symmetric(vertical:12),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12),
                     ),
@@ -298,13 +319,13 @@ class _GarageHomeScreenState extends State<GarageHomeScreen> {
               Expanded(
                 child: ElevatedButton.icon(
                   onPressed: () {
-                    Navigator.pushNamed(context, '/add-service');
+                    Navigator.pushNamed(context, '/garage-report');
                   },
-                  icon: Icon(Icons.add, color: Colors.white),
-                  label: Text('Add Service', style: TextStyle(color: Colors.white)),
+                  icon: const Icon(Icons.bar_chart, color: Colors.white),
+                  label: Text(loc.viewReport, style: const TextStyle(color: Colors.white)),
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.indigo,
-                    padding: EdgeInsets.symmetric(vertical: 12),
+                    backgroundColor: Colors.deepPurple,
+                    padding: const EdgeInsets.symmetric(vertical:12),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12),
                     ),
@@ -317,8 +338,8 @@ class _GarageHomeScreenState extends State<GarageHomeScreen> {
 
           // Recent Requests
           Text(
-            'Recent Requests',
-            style: TextStyle(
+            loc.recentRequests,
+            style: const TextStyle(
               fontSize: 18,
               fontWeight: FontWeight.bold,
             ),
@@ -327,13 +348,13 @@ class _GarageHomeScreenState extends State<GarageHomeScreen> {
           serviceRequestProvider.garageRequests.isEmpty
               ? Card(
                   child: Padding(
-                    padding: EdgeInsets.all(32),
+                    padding: const EdgeInsets.all(32),
                     child: Column(
                       children: [
-                        Icon(Icons.inbox, size: 48, color: Colors.grey),
+                        const Icon(Icons.inbox, size: 48, color: Colors.grey),
                         SizedBox(height: 12),
                         Text(
-                          'No requests yet',
+                          loc.noRequestsYet,
                           style: TextStyle(
                             fontSize: 16,
                             fontWeight: FontWeight.bold,
@@ -342,7 +363,7 @@ class _GarageHomeScreenState extends State<GarageHomeScreen> {
                         ),
                         SizedBox(height: 4),
                         Text(
-                          'Service requests will appear here',
+                          loc.requestsAppearHere,
                           style: TextStyle(color: Colors.grey[500]),
                         ),
                       ],
@@ -353,24 +374,24 @@ class _GarageHomeScreenState extends State<GarageHomeScreen> {
                   children: serviceRequestProvider.garageRequests
                       .take(3)
                       .map((request) => Card(
-                            margin: EdgeInsets.only(bottom: 8),
+                            margin: const EdgeInsets.only(bottom: 8),
                             child: ListTile(
                               leading: CircleAvatar(
                                 backgroundColor: Colors.blue[100],
-                                child: Icon(Icons.person, color: Colors.blue),
+                                child: const Icon(Icons.person, color: Colors.blue),
                               ),
                               title: Text(request.service.name),
                               subtitle: Text(
-                                request.customer?.fullName ?? 'Unknown Customer',
+                                request.customer?.fullName ?? loc.unknownCustomer,
                               ),
                               trailing: Container(
-                                padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                                 decoration: BoxDecoration(
                                   color: _getStatusColor(request.status).withOpacity(0.1),
                                   borderRadius: BorderRadius.circular(12),
                                 ),
                                 child: Text(
-                                  request.statusText,
+                                  _localizedStatus(request.status),
                                   style: TextStyle(
                                     color: _getStatusColor(request.status),
                                     fontSize: 12,
@@ -395,7 +416,7 @@ class _GarageHomeScreenState extends State<GarageHomeScreen> {
       elevation: 2,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       child: Padding(
-        padding: EdgeInsets.all(16),
+        padding: const EdgeInsets.all(16),
         child: Column(
           children: [
             Icon(icon, color: color, size: 32),
@@ -429,12 +450,20 @@ class _GarageHomeScreenState extends State<GarageHomeScreen> {
         return Colors.green;
       case RequestStatus.REJECTED:
         return Colors.red;
-      case RequestStatus.IN_PROGRESS:
-        return Colors.blue;
-      case RequestStatus.COMPLETED:
-        return Colors.green;
-      case RequestStatus.CANCELLED:
+      default:
         return Colors.grey;
     }
   }
-}
+
+  String _localizedStatus(RequestStatus status) {
+    final loc = AppLocalizations.of(context);
+    switch(status) {
+      case RequestStatus.PENDING: return loc.statusPending;
+      case RequestStatus.ACCEPTED: return loc.statusAccepted;
+      case RequestStatus.REJECTED: return loc.statusRejected;
+      case RequestStatus.IN_PROGRESS: return loc.statusPending; // fallback until a dedicated key is added
+      case RequestStatus.COMPLETED: return loc.statusAccepted; // temporary mapping
+      case RequestStatus.CANCELLED: return loc.statusRejected; // temporary mapping
+    }
+  }
+  }

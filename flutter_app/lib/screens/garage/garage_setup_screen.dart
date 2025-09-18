@@ -3,6 +3,8 @@ import 'package:provider/provider.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:permission_handler/permission_handler.dart';
 import '../../providers/garage_provider.dart';
+import '../../widgets/map_location_picker.dart';
+import '../../l10n/gen/app_localizations.dart';
 
 class GarageSetupScreen extends StatefulWidget {
   const GarageSetupScreen({super.key});
@@ -47,9 +49,10 @@ class _GarageSetupScreenState extends State<GarageSetupScreen> {
       if (!status.isGranted) {
         status = await Permission.location.request();
         if (!status.isGranted) {
+          final loc = AppLocalizations.of(context);
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text('Location permission is required to set up garage'),
+              content: Text(loc.locationPermissionRequiredSetup),
               backgroundColor: Colors.orange,
             ),
           );
@@ -65,9 +68,10 @@ class _GarageSetupScreenState extends State<GarageSetupScreen> {
         desiredAccuracy: LocationAccuracy.high,
       );
     } catch (e) {
+      final loc = AppLocalizations.of(context);
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Failed to get location: $e'),
+          content: Text(loc.failedToGetLocationWithError(e.toString())),
           backgroundColor: Colors.red,
         ),
       );
@@ -81,9 +85,10 @@ class _GarageSetupScreenState extends State<GarageSetupScreen> {
   Future<void> _createGarage() async {
     if (_formKey.currentState!.validate()) {
       if (_currentPosition == null) {
+        final loc = AppLocalizations.of(context);
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Location is required to create garage'),
+            content: Text(loc.locationRequiredCreateGarage),
             backgroundColor: Colors.red,
           ),
         );
@@ -101,10 +106,11 @@ class _GarageSetupScreenState extends State<GarageSetupScreen> {
         workingHours: _workingHoursController.text.trim().isEmpty ? null : _workingHoursController.text.trim(),
       );
 
+      final loc = AppLocalizations.of(context);
       if (success) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Garage created successfully!'),
+            content: Text(loc.garageCreatedSuccess),
             backgroundColor: Colors.green,
           ),
         );
@@ -112,7 +118,7 @@ class _GarageSetupScreenState extends State<GarageSetupScreen> {
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(garageProvider.error ?? 'Failed to create garage'),
+            content: Text(garageProvider.error ?? loc.garageCreateFailed),
             backgroundColor: Colors.red,
           ),
         );
@@ -122,9 +128,10 @@ class _GarageSetupScreenState extends State<GarageSetupScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final loc = AppLocalizations.of(context);
     return Scaffold(
       appBar: AppBar(
-        title: Text('Set Up Your Garage'),
+        title: Text(loc.setUpYourGarage),
         backgroundColor: Colors.blue,
         foregroundColor: Colors.white,
       ),
@@ -135,8 +142,39 @@ class _GarageSetupScreenState extends State<GarageSetupScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              MapLocationPicker(
+                initialLat: _currentPosition?.latitude,
+                initialLng: _currentPosition?.longitude,
+                onLocationPicked: (lat,lng){
+                  _currentPosition = Position(
+                    longitude: lng,
+                    latitude: lat,
+                    timestamp: DateTime.now(),
+                    accuracy: 1,
+                    altitude: 0,
+                    heading: 0,
+                    speed: 0,
+                    speedAccuracy: 0,
+                    altitudeAccuracy: 1,
+                    headingAccuracy: 1,
+                  );
+                  setState(() {});
+                },
+              ),
+              const SizedBox(height: 8),
+              if (_currentPosition != null)
+                Text(
+                  loc.selectedCoordinatesLabel(
+                    _currentPosition!.latitude.toStringAsFixed(6),
+                    _currentPosition!.longitude.toStringAsFixed(6),
+                  ),
+                  style: TextStyle(color: Colors.blue[700], fontWeight: FontWeight.w600)),
+              if (_currentPosition == null && !_isLoadingLocation)
+                Text(loc.mapTapToChooseLocation, style: TextStyle(color: Colors.grey[600])),
+              const SizedBox(height: 16),
+              
               Text(
-                'Create Your Garage Profile',
+                loc.createGarageProfileHeading,
                 style: TextStyle(
                   fontSize: 24,
                   fontWeight: FontWeight.bold,
@@ -144,7 +182,7 @@ class _GarageSetupScreenState extends State<GarageSetupScreen> {
               ),
               SizedBox(height: 8),
               Text(
-                'Fill in the details below to set up your garage and start receiving service requests.',
+                loc.createGarageProfileIntro,
                 style: TextStyle(
                   color: Colors.grey[600],
                   fontSize: 16,
@@ -155,8 +193,8 @@ class _GarageSetupScreenState extends State<GarageSetupScreen> {
               TextFormField(
                 controller: _nameController,
                 decoration: InputDecoration(
-                  labelText: 'Garage Name *',
-                  hintText: 'Enter your garage name',
+                  labelText: '${loc.garageNameLabel} *',
+                  hintText: loc.garageNameHint,
                   prefixIcon: Icon(Icons.store),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
@@ -164,7 +202,7 @@ class _GarageSetupScreenState extends State<GarageSetupScreen> {
                 ),
                 validator: (value) {
                   if (value == null || value.trim().isEmpty) {
-                    return 'Please enter garage name';
+                    return loc.garageNameRequired;
                   }
                   return null;
                 },
@@ -174,8 +212,8 @@ class _GarageSetupScreenState extends State<GarageSetupScreen> {
               TextFormField(
                 controller: _addressController,
                 decoration: InputDecoration(
-                  labelText: 'Address *',
-                  hintText: 'Enter your garage address',
+                  labelText: '${loc.garageAddressLabel} *',
+                  hintText: loc.garageAddressHint,
                   prefixIcon: Icon(Icons.location_on),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
@@ -184,85 +222,18 @@ class _GarageSetupScreenState extends State<GarageSetupScreen> {
                 maxLines: 2,
                 validator: (value) {
                   if (value == null || value.trim().isEmpty) {
-                    return 'Please enter address';
+                    return loc.garageAddressRequired;
                   }
                   return null;
                 },
               ),
               SizedBox(height: 16),
               
-              Container(
-                padding: EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  color: Colors.blue[50],
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: Colors.blue[200]!),
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      children: [
-                        Icon(Icons.gps_fixed, color: Colors.blue),
-                        SizedBox(width: 8),
-                        Text(
-                          'Location',
-                          style: TextStyle(
-                            fontWeight: FontWeight.bold,
-                            color: Colors.blue[800],
-                          ),
-                        ),
-                      ],
-                    ),
-                    SizedBox(height: 8),
-                    if (_isLoadingLocation)
-                      Row(
-                        children: [
-                          SizedBox(
-                            width: 20,
-                            height: 20,
-                            child: CircularProgressIndicator(strokeWidth: 2),
-                          ),
-                          SizedBox(width: 12),
-                          Text('Getting your location...'),
-                        ],
-                      )
-                    else if (_currentPosition != null)
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            'Latitude: ${_currentPosition!.latitude.toStringAsFixed(6)}',
-                            style: TextStyle(color: Colors.blue[700]),
-                          ),
-                          Text(
-                            'Longitude: ${_currentPosition!.longitude.toStringAsFixed(6)}',
-                            style: TextStyle(color: Colors.blue[700]),
-                          ),
-                        ],
-                      )
-                    else
-                      Row(
-                        children: [
-                          Icon(Icons.location_off, color: Colors.red),
-                          SizedBox(width: 8),
-                          Expanded(child: Text('Location not available')),
-                          TextButton(
-                            onPressed: _getCurrentLocation,
-                            child: Text('Retry'),
-                          ),
-                        ],
-                      ),
-                  ],
-                ),
-              ),
-              SizedBox(height: 16),
-              
               TextFormField(
                 controller: _descriptionController,
                 decoration: InputDecoration(
-                  labelText: 'Description (Optional)',
-                  hintText: 'Describe your garage services and specialties',
+                  labelText: '${loc.garageDescriptionLabel} (Optional)',
+                  hintText: loc.garageDescriptionHint,
                   prefixIcon: Icon(Icons.description),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
@@ -275,8 +246,8 @@ class _GarageSetupScreenState extends State<GarageSetupScreen> {
               TextFormField(
                 controller: _workingHoursController,
                 decoration: InputDecoration(
-                  labelText: 'Working Hours (Optional)',
-                  hintText: 'e.g., Mon-Fri: 8AM-6PM, Sat: 8AM-4PM',
+                  labelText: '${loc.garageWorkingHoursLabel} (Optional)',
+                  hintText: loc.garageWorkingHoursHint,
                   prefixIcon: Icon(Icons.access_time),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
@@ -300,8 +271,8 @@ class _GarageSetupScreenState extends State<GarageSetupScreen> {
                       ),
                       child: garageProvider.isLoading
                           ? CircularProgressIndicator(color: Colors.white)
-                          : Text(
-                              'Create Garage',
+              : Text(
+                loc.createGarageTitle,
                               style: TextStyle(
                                 fontSize: 16,
                                 fontWeight: FontWeight.bold,

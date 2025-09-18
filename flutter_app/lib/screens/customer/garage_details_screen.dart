@@ -19,7 +19,7 @@ class _GarageDetailsScreenState extends State<GarageDetailsScreen> {
     super.didChangeDependencies();
     if (garage == null) {
       garage = ModalRoute.of(context)!.settings.arguments as Garage;
-      _loadServices();
+      WidgetsBinding.instance.addPostFrameCallback((_) { _loadServices(); });
     }
   }
 

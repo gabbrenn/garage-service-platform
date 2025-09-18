@@ -10,14 +10,16 @@ public class AuthResponse {
     private String firstName;
     private String lastName;
     private User.UserType userType;
+    private String refreshToken;
 
-    public AuthResponse(String accessToken, Long id, String email, String firstName, String lastName, User.UserType userType) {
+    public AuthResponse(String accessToken, Long id, String email, String firstName, String lastName, User.UserType userType, String refreshToken) {
         this.token = accessToken;
         this.id = id;
         this.email = email;
         this.firstName = firstName;
         this.lastName = lastName;
         this.userType = userType;
+        this.refreshToken = refreshToken;
     }
 
     // Getters and Setters
@@ -41,4 +43,6 @@ public class AuthResponse {
 
     public User.UserType getUserType() { return userType; }
     public void setUserType(User.UserType userType) { this.userType = userType; }
+    public String getRefreshToken() { return refreshToken; }
+    public void setRefreshToken(String refreshToken) { this.refreshToken = refreshToken; }
 }

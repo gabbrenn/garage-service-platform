@@ -145,6 +145,49 @@ app.jwtExpirationMs=86400000
 server.port=8080
 ```
 
+#### Firebase Cloud Messaging (Server)
+To enable server-side push notifications, provide your Firebase Admin SDK service account credentials to the backend.
+
+Options:
+- File path:
+   - Set `fcm.serviceAccountPath` to an absolute/relative path to the JSON file
+   - Or package the JSON on the classpath and use `fcm.serviceAccountPath=classpath:firebase-service-account.json`
+- Base64:
+   - Set `fcm.serviceAccountBase64` to the Base64-encoded contents of the JSON
+
+PowerShell example to produce Base64 from a file:
+
+```powershell
+$bytes = [IO.File]::ReadAllBytes('C:\secrets\firebase-service-account.json')
+$b64 = [Convert]::ToBase64String($bytes)
+Write-Output $b64
+```
+
+Then either paste it into `application.properties` or, preferably, provide it via an environment variable and start the app normally (no extra arguments needed, properties are bound from env):
+
+```powershell
+$env:FCM_SERVICEACCOUNTBASE64 = $b64
+mvn -f backend\pom.xml spring-boot:run
+```
+
+Dotenv option (local convenience on Windows):
+- Create `backend/.env` (auto-loaded by spring-dotenv) with either:
+   - FCM_SERVICEACCOUNTBASE64=... (Base64 string)  ← recommended
+   - or FCM_SERVICEACCOUNTPATH=C:\path\to\service-account.json
+   - optional: SPRING_PROFILES_ACTIVE=dev
+- Start the backend as usual; no script needed:
+   - `mvn -f backend\pom.xml spring-boot:run`
+
+Note: The PowerShell runner at `backend/scripts/run-with-dotenv.ps1` is now optional for local use and not required when using spring-dotenv. You can keep it for convenience or ignore it and rely solely on `.env`/environment variables.
+
+Verification:
+1. Start the backend with credentials configured
+2. Log into the mobile app so it registers your device token
+3. Call `POST /api/notifications/test-push` or use the in-app test dialog; you should receive a notification
+4. For custom channel/sound, call `POST /api/notifications/test-push-custom` with JSON body:
+    `{ "title":"Hi", "message":"Custom", "channelId":"garage_service_urgent", "sound":"urgent" }`
+
+
 ### Frontend Configuration
 Edit `flutter_app/lib/services/api_service.dart`:
 

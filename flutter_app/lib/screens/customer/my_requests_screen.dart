@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import '../../l10n/gen/app_localizations.dart';
 import '../../providers/service_request_provider.dart';
 import '../../models/service_request.dart';
 
@@ -14,7 +15,8 @@ class _MyRequestsScreenState extends State<MyRequestsScreen> {
   @override
   void initState() {
     super.initState();
-    _loadRequests();
+    // Defer to next frame to avoid provider notify during build lifecycle
+    WidgetsBinding.instance.addPostFrameCallback((_) { _loadRequests(); });
   }
 
   Future<void> _loadRequests() async {
@@ -26,9 +28,10 @@ class _MyRequestsScreenState extends State<MyRequestsScreen> {
   Widget build(BuildContext context) {
     final serviceRequestProvider = Provider.of<ServiceRequestProvider>(context);
 
+    final loc = AppLocalizations.of(context);
     return Scaffold(
       appBar: AppBar(
-        title: Text('My Requests'),
+        title: Text(loc.myRequests),
         backgroundColor: Colors.blue,
         foregroundColor: Colors.white,
         actions: [
@@ -47,13 +50,13 @@ class _MyRequestsScreenState extends State<MyRequestsScreen> {
                     children: [
                       Icon(Icons.error, size: 64, color: Colors.red),
                       SizedBox(height: 16),
-                      Text('Error loading requests'),
+                      Text(loc.errorLoadingRequests),
                       SizedBox(height: 8),
                       Text(serviceRequestProvider.error!),
                       SizedBox(height: 16),
                       ElevatedButton(
                         onPressed: _loadRequests,
-                        child: Text('Retry'),
+                        child: Text(loc.retry),
                       ),
                     ],
                   ),
@@ -66,11 +69,11 @@ class _MyRequestsScreenState extends State<MyRequestsScreen> {
                           Icon(Icons.inbox, size: 64, color: Colors.grey),
                           SizedBox(height: 16),
                           Text(
-                            'No requests yet',
+                            loc.noRequestsYet,
                             style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                           ),
                           SizedBox(height: 8),
-                          Text('Your service requests will appear here'),
+                          Text(loc.noRequestsYetLong),
                         ],
                       ),
                     )

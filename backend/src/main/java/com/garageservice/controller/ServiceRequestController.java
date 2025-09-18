@@ -7,6 +7,8 @@ import com.garageservice.model.ServiceRequest;
 import com.garageservice.dto.ServiceRequestResponseDto;
 import com.garageservice.model.User;
 import com.garageservice.repository.GarageRepository;
+import com.garageservice.service.NotificationService;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import com.garageservice.repository.GarageServiceRepository;
 import com.garageservice.repository.ServiceRequestRepository;
 import com.garageservice.repository.UserRepository;
@@ -39,6 +41,10 @@ public class ServiceRequestController {
 
     @Autowired
     private GarageServiceRepository garageServiceRepository;
+    @Autowired
+    private NotificationService notificationService;
+    @Autowired
+    private SimpMessagingTemplate messagingTemplate;
 
     @PostMapping
     @PreAuthorize("hasRole('CUSTOMER')")
@@ -71,7 +77,11 @@ public class ServiceRequestController {
                 requestDto.getDescription()
         );
 
-        ServiceRequest savedRequest = serviceRequestRepository.save(serviceRequest);
+    ServiceRequest savedRequest = serviceRequestRepository.save(serviceRequest);
+    // Notify garage owner
+    User garageOwner = garage.get().getUser();
+    var createdNotif = notificationService.create(garageOwner, "New Service Request", "A new request #"+savedRequest.getId()+" has been created by "+customer.getFirstName());
+    messagingTemplate.convertAndSend("/topic/notifications."+garageOwner.getId(), java.util.Map.of("type","CREATED","id", createdNotif.getId()));
         ServiceRequestResponseDto dto = new ServiceRequestResponseDto(
             savedRequest.getId(),
             savedRequest.getCustomer().getEmail(),
@@ -192,7 +202,10 @@ public class ServiceRequestController {
         request.setGarageResponse(responseDto.getResponse());
         request.setEstimatedArrivalMinutes(responseDto.getEstimatedArrivalMinutes());
 
-        ServiceRequest updatedRequest = serviceRequestRepository.save(request);
+    ServiceRequest updatedRequest = serviceRequestRepository.save(request);
+    // Notify customer
+    var createdNotif = notificationService.create(updatedRequest.getCustomer(), "Request Updated", "Your request #"+updatedRequest.getId()+" status is now "+updatedRequest.getStatus());
+    messagingTemplate.convertAndSend("/topic/notifications."+updatedRequest.getCustomer().getId(), java.util.Map.of("type","CREATED","id", createdNotif.getId()));
         ServiceRequestResponseDto dto = new ServiceRequestResponseDto(
             updatedRequest.getId(),
             updatedRequest.getCustomer().getEmail(),

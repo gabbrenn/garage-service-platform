@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../models/garage_service.dart';
 import '../../providers/garage_provider.dart';
+import '../../l10n/gen/app_localizations.dart';
 
 class ManageServicesScreen extends StatefulWidget {
   const ManageServicesScreen({super.key});
@@ -24,11 +25,12 @@ class _ManageServicesScreenState extends State<ManageServicesScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final garageProvider = Provider.of<GarageProvider>(context);
+  final garageProvider = Provider.of<GarageProvider>(context);
+  final loc = AppLocalizations.of(context);
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Manage Services'),
+        title: Text(loc.manageServices),
         backgroundColor: Colors.blue,
         foregroundColor: Colors.white,
         actions: [
@@ -64,6 +66,7 @@ class _ManageServicesScreenState extends State<ManageServicesScreen> {
   }
 
   Widget _buildEmpty() {
+    final loc = AppLocalizations.of(context);
     return Center(
       child: Padding(
         padding: const EdgeInsets.all(24.0),
@@ -72,20 +75,20 @@ class _ManageServicesScreenState extends State<ManageServicesScreen> {
           children: [
             const Icon(Icons.build, size: 64, color: Colors.grey),
             const SizedBox(height: 12),
-            const Text(
-              'No services yet',
+            Text(
+              loc.noServicesYet,
               style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 6),
             Text(
-              'Add your first service to start receiving requests',
+              loc.addFirstServiceMessage,
               style: TextStyle(color: Colors.grey[600]),
             ),
             const SizedBox(height: 16),
             ElevatedButton.icon(
               onPressed: () => Navigator.pushNamed(context, '/add-service'),
               icon: const Icon(Icons.add, color: Colors.white),
-              label: const Text('Add Service', style: TextStyle(color: Colors.white)),
+              label: Text(loc.addService, style: const TextStyle(color: Colors.white)),
               style: ElevatedButton.styleFrom(backgroundColor: Colors.blue),
             ),
           ],
@@ -95,6 +98,7 @@ class _ManageServicesScreenState extends State<ManageServicesScreen> {
   }
 
   Widget _buildError(String error, Future<void> Function() retry) {
+    final loc = AppLocalizations.of(context);
     return Center(
       child: Padding(
         padding: const EdgeInsets.all(24.0),
@@ -103,8 +107,8 @@ class _ManageServicesScreenState extends State<ManageServicesScreen> {
           children: [
             const Icon(Icons.error, size: 64, color: Colors.red),
             const SizedBox(height: 12),
-            const Text(
-              'Failed to load services',
+            Text(
+              loc.failedToLoadServices,
               style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 6),
@@ -113,7 +117,7 @@ class _ManageServicesScreenState extends State<ManageServicesScreen> {
             ElevatedButton.icon(
               onPressed: retry,
               icon: const Icon(Icons.refresh, color: Colors.white),
-              label: const Text('Retry', style: TextStyle(color: Colors.white)),
+              label: Text(loc.retry, style: const TextStyle(color: Colors.white)),
               style: ElevatedButton.styleFrom(backgroundColor: Colors.blue),
             )
           ],
@@ -123,6 +127,7 @@ class _ManageServicesScreenState extends State<ManageServicesScreen> {
   }
 
   Widget _buildServiceTile(GarageService service) {
+    final loc = AppLocalizations.of(context);
     return Card(
       margin: const EdgeInsets.only(bottom: 12),
       elevation: 3,
@@ -137,7 +142,7 @@ class _ManageServicesScreenState extends State<ManageServicesScreen> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             const SizedBox(height: 4),
-            Text(service.description ?? 'No description', maxLines: 2, overflow: TextOverflow.ellipsis),
+            Text(service.description ?? loc.noDescription, maxLines: 2, overflow: TextOverflow.ellipsis),
             const SizedBox(height: 4),
             Row(
               children: [
@@ -163,8 +168,8 @@ class _ManageServicesScreenState extends State<ManageServicesScreen> {
             }
           },
           itemBuilder: (context) => [
-            const PopupMenuItem(value: 'edit', child: Text('Edit')),
-            const PopupMenuItem(value: 'delete', child: Text('Delete')),
+            PopupMenuItem(value: 'edit', child: Text(loc.editServiceTitle)),
+            PopupMenuItem(value: 'delete', child: Text(loc.delete)),
           ],
         ),
       ),
@@ -172,17 +177,18 @@ class _ManageServicesScreenState extends State<ManageServicesScreen> {
   }
 
   void _confirmDelete(GarageService service) async {
+    final loc = AppLocalizations.of(context);
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Delete Service'),
-        content: Text('Are you sure you want to delete "${service.name}"?'),
+  title: Text(loc.deleteServiceTitle),
+  content: Text(loc.deleteServiceConfirm(service.name)),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('Cancel')),
+          TextButton(onPressed: () => Navigator.pop(context, false), child: Text(loc.cancel)),
           ElevatedButton(
             onPressed: () => Navigator.pop(context, true),
             style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
-            child: const Text('Delete', style: TextStyle(color: Colors.white)),
+            child: Text(loc.delete, style: const TextStyle(color: Colors.white)),
           ),
         ],
       ),
@@ -193,7 +199,7 @@ class _ManageServicesScreenState extends State<ManageServicesScreen> {
       final ok = await provider.deleteService(service.id);
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(ok ? 'Service deleted' : provider.error ?? 'Failed to delete'),
+          content: Text(ok ? loc.serviceDeletedSuccess : provider.error ?? loc.serviceDeleteFailed),
           backgroundColor: ok ? Colors.green : Colors.red,
         ),
       );
@@ -215,6 +221,7 @@ class _ManageServicesScreenState extends State<ManageServicesScreen> {
         borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
       ),
       builder: (context) {
+        final loc = AppLocalizations.of(context);
         return Padding(
           padding: EdgeInsets.only(
             left: 16,
@@ -230,7 +237,7 @@ class _ManageServicesScreenState extends State<ManageServicesScreen> {
               children: [
                 Row(
                   children: [
-                    const Text('Edit Service', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                    Text(loc.editServiceTitle, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
                     const Spacer(),
                     IconButton(
                       onPressed: () => Navigator.pop(context),
@@ -241,13 +248,13 @@ class _ManageServicesScreenState extends State<ManageServicesScreen> {
                 const SizedBox(height: 8),
                 TextFormField(
                   controller: nameCtrl,
-                  decoration: const InputDecoration(labelText: 'Name', border: OutlineInputBorder()),
-                  validator: (v) => (v == null || v.trim().isEmpty) ? 'Name is required' : null,
+                  decoration: InputDecoration(labelText: loc.name, border: const OutlineInputBorder()),
+                  validator: (v) => (v == null || v.trim().isEmpty) ? loc.nameRequired : null,
                 ),
                 const SizedBox(height: 12),
                 TextFormField(
                   controller: descCtrl,
-                  decoration: const InputDecoration(labelText: 'Description', border: OutlineInputBorder()),
+                  decoration: InputDecoration(labelText: loc.descriptionLabel, border: const OutlineInputBorder()),
                   maxLines: 3,
                 ),
                 const SizedBox(height: 12),
@@ -256,12 +263,12 @@ class _ManageServicesScreenState extends State<ManageServicesScreen> {
                     Expanded(
                       child: TextFormField(
                         controller: priceCtrl,
-                        decoration: const InputDecoration(labelText: 'Price', border: OutlineInputBorder(), prefixText: '\$'),
+                        decoration: InputDecoration(labelText: loc.price, border: const OutlineInputBorder(), prefixText: '4'),
                         keyboardType: const TextInputType.numberWithOptions(decimal: true),
                         validator: (v) {
-                          if (v == null || v.trim().isEmpty) return 'Price is required';
+                          if (v == null || v.trim().isEmpty) return loc.priceRequired;
                           final d = double.tryParse(v);
-                          if (d == null || d < 0) return 'Invalid price';
+                          if (d == null || d < 0) return loc.invalidPrice;
                           return null;
                         },
                       ),
@@ -270,7 +277,7 @@ class _ManageServicesScreenState extends State<ManageServicesScreen> {
                     Expanded(
                       child: TextFormField(
                         controller: durationCtrl,
-                        decoration: const InputDecoration(labelText: 'Duration (min)', border: OutlineInputBorder()),
+                        decoration: InputDecoration(labelText: loc.durationMinutes, border: const OutlineInputBorder()),
                         keyboardType: TextInputType.number,
                       ),
                     ),
@@ -295,16 +302,16 @@ class _ManageServicesScreenState extends State<ManageServicesScreen> {
                       if (ok) {
                         if (mounted) Navigator.pop(context);
                         ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(content: Text('Service updated'), backgroundColor: Colors.green),
+                          SnackBar(content: Text(loc.serviceUpdatedSuccess), backgroundColor: Colors.green),
                         );
                       } else {
                         ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(content: Text(provider.error ?? 'Failed to update'), backgroundColor: Colors.red),
+                          SnackBar(content: Text(provider.error ?? loc.serviceUpdateFailed), backgroundColor: Colors.red),
                         );
                       }
                     },
                     icon: const Icon(Icons.save, color: Colors.white),
-                    label: const Text('Save Changes', style: TextStyle(color: Colors.white)),
+                    label: Text(loc.saveChanges, style: const TextStyle(color: Colors.white)),
                     style: ElevatedButton.styleFrom(backgroundColor: Colors.blue),
                   ),
                 ),

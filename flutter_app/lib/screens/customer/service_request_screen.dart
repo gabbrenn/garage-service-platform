@@ -4,6 +4,8 @@ import 'package:geolocator/geolocator.dart';
 import '../../providers/service_request_provider.dart';
 import '../../models/garage.dart';
 import '../../models/garage_service.dart';
+import '../../widgets/map_location_picker.dart';
+import '../../l10n/gen/app_localizations.dart';
 
 class ServiceRequestScreen extends StatefulWidget {
   const ServiceRequestScreen({super.key});
@@ -50,9 +52,10 @@ class _ServiceRequestScreenState extends State<ServiceRequestScreen> {
         desiredAccuracy: LocationAccuracy.high,
       );
     } catch (e) {
+      final loc = AppLocalizations.of(context);
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Failed to get location: $e'),
+          content: Text(loc.failedToGetLocationWithError(e.toString())),
           backgroundColor: Colors.red,
         ),
       );
@@ -66,9 +69,10 @@ class _ServiceRequestScreenState extends State<ServiceRequestScreen> {
   Future<void> _submitRequest() async {
     if (_formKey.currentState!.validate()) {
       if (_currentPosition == null) {
+        final loc = AppLocalizations.of(context);
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Location is required to submit request'),
+            content: Text(loc.locationRequiredSubmitRequest),
             backgroundColor: Colors.red,
           ),
         );
@@ -86,10 +90,11 @@ class _ServiceRequestScreenState extends State<ServiceRequestScreen> {
         description: _descriptionController.text.trim().isEmpty ? null : _descriptionController.text.trim(),
       );
 
+      final loc = AppLocalizations.of(context);
       if (success) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Service request submitted successfully!'),
+            content: Text(loc.serviceRequestSubmittedSuccess),
             backgroundColor: Colors.green,
           ),
         );
@@ -97,7 +102,7 @@ class _ServiceRequestScreenState extends State<ServiceRequestScreen> {
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(serviceRequestProvider.error ?? 'Failed to submit request'),
+            content: Text(serviceRequestProvider.error ?? loc.serviceRequestSubmitFailed),
             backgroundColor: Colors.red,
           ),
         );
@@ -107,16 +112,17 @@ class _ServiceRequestScreenState extends State<ServiceRequestScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final loc = AppLocalizations.of(context);
     if (garage == null || service == null) {
       return Scaffold(
-        appBar: AppBar(title: Text('Request Service')),
+        appBar: AppBar(title: Text(loc.requestServiceTitle)),
         body: Center(child: CircularProgressIndicator()),
       );
     }
 
     return Scaffold(
       appBar: AppBar(
-        title: Text('Request Service'),
+        title: Text(loc.requestServiceTitle),
         backgroundColor: Colors.blue,
         foregroundColor: Colors.white,
       ),
@@ -127,6 +133,45 @@ class _ServiceRequestScreenState extends State<ServiceRequestScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              MapLocationPicker(
+                initialLat: _currentPosition?.latitude,
+                initialLng: _currentPosition?.longitude,
+                onLocationPicked: (lat, lng) {
+                  _currentPosition = Position(
+                    longitude: lng,
+                    latitude: lat,
+                    timestamp: DateTime.now(),
+                    accuracy: 1,
+                    altitude: 0,
+                    heading: 0,
+                    speed: 0,
+                    speedAccuracy: 0,
+                    altitudeAccuracy: 1,
+                    headingAccuracy: 1,
+                  );
+                  setState(() {});
+                },
+              ),
+              const SizedBox(height: 8),
+              if (_currentPosition != null)
+                Text(
+                  loc.selectedCoordinatesLabel(
+                    _currentPosition!.latitude.toStringAsFixed(6),
+                    _currentPosition!.longitude.toStringAsFixed(6),
+                  ),
+                  style: TextStyle(color: Colors.blue[700], fontWeight: FontWeight.w600),
+                )
+              else if (_isLoadingLocation)
+                Row(
+                  children: [
+                    const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2)),
+                    const SizedBox(width: 8),
+                    Text(loc.fetchingCurrentLocation)
+                  ],
+                )
+              else
+                Text(loc.mapTapToSetLocation, style: TextStyle(color: Colors.grey[600])),
+              const SizedBox(height: 16),
               Card(
                 elevation: 4,
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
@@ -136,7 +181,7 @@ class _ServiceRequestScreenState extends State<ServiceRequestScreen> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        'Service Details',
+                        loc.serviceDetailsHeading,
                         style: TextStyle(
                           fontSize: 18,
                           fontWeight: FontWeight.bold,
@@ -232,7 +277,7 @@ class _ServiceRequestScreenState extends State<ServiceRequestScreen> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        'Your Location',
+                        loc.yourLocationHeading,
                         style: TextStyle(
                           fontSize: 18,
                           fontWeight: FontWeight.bold,
@@ -249,7 +294,8 @@ class _ServiceRequestScreenState extends State<ServiceRequestScreen> {
                               child: CircularProgressIndicator(strokeWidth: 2),
                             ),
                             SizedBox(width: 12),
-                            Text('Getting your location...'),
+                            Text(loc.gettingLocation),
+                            Text(loc.gettingLocation),
                           ],
                         )
                       else if (_currentPosition != null)
@@ -259,7 +305,10 @@ class _ServiceRequestScreenState extends State<ServiceRequestScreen> {
                             SizedBox(width: 8),
                             Expanded(
                               child: Text(
-                                'Location: ${_currentPosition!.latitude.toStringAsFixed(4)}, ${_currentPosition!.longitude.toStringAsFixed(4)}',
+                                loc.currentLocationLabel(
+                                  _currentPosition!.latitude.toStringAsFixed(4),
+                                  _currentPosition!.longitude.toStringAsFixed(4),
+                                ),
                                 style: TextStyle(color: Colors.green[800]),
                               ),
                             ),
@@ -270,10 +319,10 @@ class _ServiceRequestScreenState extends State<ServiceRequestScreen> {
                           children: [
                             Icon(Icons.location_off, color: Colors.red),
                             SizedBox(width: 8),
-                            Expanded(child: Text('Location not available')),
+                            Expanded(child: Text(loc.locationNotAvailable)),
                             TextButton(
                               onPressed: _getCurrentLocation,
-                              child: Text('Retry'),
+                              child: Text(loc.retry),
                             ),
                           ],
                         ),
@@ -281,8 +330,8 @@ class _ServiceRequestScreenState extends State<ServiceRequestScreen> {
                       TextFormField(
                         controller: _addressController,
                         decoration: InputDecoration(
-                          labelText: 'Address (Optional)',
-                          hintText: 'Enter your address for easier location',
+                          labelText: loc.addressOptionalLabel,
+                          hintText: loc.addressOptionalHint,
                           prefixIcon: Icon(Icons.home),
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(12),
@@ -304,7 +353,7 @@ class _ServiceRequestScreenState extends State<ServiceRequestScreen> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        'Additional Details',
+                        loc.additionalDetailsHeading,
                         style: TextStyle(
                           fontSize: 18,
                           fontWeight: FontWeight.bold,
@@ -315,8 +364,8 @@ class _ServiceRequestScreenState extends State<ServiceRequestScreen> {
                       TextFormField(
                         controller: _descriptionController,
                         decoration: InputDecoration(
-                          labelText: 'Description (Optional)',
-                          hintText: 'Describe the issue or any special requirements',
+                          labelText: loc.descriptionOptionalLabel,
+                          hintText: loc.descriptionOptionalHint,
                           prefixIcon: Icon(Icons.description),
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(12),
@@ -344,8 +393,8 @@ class _ServiceRequestScreenState extends State<ServiceRequestScreen> {
                       ),
                       child: serviceRequestProvider.isLoading
                           ? CircularProgressIndicator(color: Colors.white)
-                          : Text(
-                              'Submit Request',
+              : Text(
+                loc.submitRequestButton,
                               style: TextStyle(
                                 fontSize: 16,
                                 fontWeight: FontWeight.bold,

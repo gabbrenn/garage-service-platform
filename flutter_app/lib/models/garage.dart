@@ -1,4 +1,5 @@
 import 'garage_service.dart';
+import 'dart:math' as math;
 
 class Garage {
   final int id;
@@ -56,9 +57,17 @@ class Garage {
   }
 
   double distanceFrom(double lat, double lng) {
-    // Simple distance calculation (Haversine formula would be more accurate)
-    double deltaLat = latitude - lat;
-    double deltaLng = longitude - lng;
-    return (deltaLat * deltaLat + deltaLng * deltaLng) * 111; // Rough km conversion
+    // Haversine (re-implemented with local names to avoid analyzer confusion)
+    const r = 6371.0; // km
+    double toRad(double d) => d * math.pi / 180.0;
+    final dLat = toRad(lat - latitude);
+    final dLon = toRad(lng - longitude);
+    final lat1 = toRad(latitude);
+    final lat2 = toRad(lat);
+    final a = math.sin(dLat / 2) * math.sin(dLat / 2) +
+        math.cos(lat1) * math.cos(lat2) *
+            math.sin(dLon / 2) * math.sin(dLon / 2);
+    final c = 2 * math.atan2(math.sqrt(a), math.sqrt(1 - a));
+    return r * c;
   }
 }

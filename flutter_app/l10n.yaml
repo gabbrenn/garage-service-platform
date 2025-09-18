@@ -1,0 +1,12 @@
+# Flutter localization configuration (explicit)
+arb-dir: lib/l10n
+template-arb-file: app_en.arb
+output-localization-file: app_localizations.dart
+output-class: AppLocalizations
+output-dir: lib/l10n/gen
+synthetic-package: false
+nullable-getter: false
+
+# You can add more options later, e.g.:
+# untranslated-messages-file: untranslated.txt
+# preferred-supported-locales: en, fr

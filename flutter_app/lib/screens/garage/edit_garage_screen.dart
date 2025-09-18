@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../providers/garage_provider.dart';
+import '../../widgets/map_location_picker.dart';
+import '../../l10n/gen/app_localizations.dart';
 
 class EditGarageScreen extends StatefulWidget {
   const EditGarageScreen({super.key});
@@ -53,9 +55,10 @@ class _EditGarageScreenState extends State<EditGarageScreen> {
   Widget build(BuildContext context) {
     final provider = Provider.of<GarageProvider>(context);
 
+    final loc = AppLocalizations.of(context);
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Edit Garage Profile'),
+        title: Text(loc.editGarageTitle),
         backgroundColor: Colors.blue,
         foregroundColor: Colors.white,
       ),
@@ -64,60 +67,44 @@ class _EditGarageScreenState extends State<EditGarageScreen> {
         child: ListView(
           padding: const EdgeInsets.all(16),
           children: [
+            MapLocationPicker(
+              initialLat: double.tryParse(_latCtrl.text),
+              initialLng: double.tryParse(_lngCtrl.text),
+              onLocationPicked: (lat, lng) {
+                _latCtrl.text = lat.toStringAsFixed(6);
+                _lngCtrl.text = lng.toStringAsFixed(6);
+                setState(() {});
+              },
+            ),
+            const SizedBox(height: 8),
+            if (_latCtrl.text.isNotEmpty && _lngCtrl.text.isNotEmpty)
+              Text(
+                loc.selectedCoordinatesLabel(_latCtrl.text, _lngCtrl.text),
+                style: TextStyle(color: Colors.blue[700], fontWeight: FontWeight.w600),
+              ),
+            const SizedBox(height: 12),
             TextFormField(
               controller: _nameCtrl,
-              decoration: const InputDecoration(labelText: 'Name', border: OutlineInputBorder()),
-              validator: (v) => v == null || v.trim().isEmpty ? 'Name is required' : null,
+              decoration: InputDecoration(labelText: loc.name, border: const OutlineInputBorder()),
+              validator: (v) => v == null || v.trim().isEmpty ? loc.nameRequired : null,
             ),
             const SizedBox(height: 12),
             TextFormField(
               controller: _addressCtrl,
-              decoration: const InputDecoration(labelText: 'Address', border: OutlineInputBorder()),
-              validator: (v) => v == null || v.trim().isEmpty ? 'Address is required' : null,
+              decoration: InputDecoration(labelText: loc.garageAddressLabel, border: const OutlineInputBorder()),
+              validator: (v) => v == null || v.trim().isEmpty ? loc.garageAddressRequired : null,
               maxLines: 2,
-            ),
-            const SizedBox(height: 12),
-            Row(
-              children: [
-                Expanded(
-                  child: TextFormField(
-                    controller: _latCtrl,
-                    decoration: const InputDecoration(labelText: 'Latitude', border: OutlineInputBorder()),
-                    keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                    validator: (v) {
-                      final d = double.tryParse(v ?? '');
-                      if (d == null) return 'Invalid latitude';
-                      if (d < -90 || d > 90) return 'Latitude out of range';
-                      return null;
-                    },
-                  ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: TextFormField(
-                    controller: _lngCtrl,
-                    decoration: const InputDecoration(labelText: 'Longitude', border: OutlineInputBorder()),
-                    keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                    validator: (v) {
-                      final d = double.tryParse(v ?? '');
-                      if (d == null) return 'Invalid longitude';
-                      if (d < -180 || d > 180) return 'Longitude out of range';
-                      return null;
-                    },
-                  ),
-                ),
-              ],
             ),
             const SizedBox(height: 12),
             TextFormField(
               controller: _descCtrl,
-              decoration: const InputDecoration(labelText: 'Description', border: OutlineInputBorder()),
+              decoration: InputDecoration(labelText: loc.descriptionLabel, border: const OutlineInputBorder()),
               maxLines: 3,
             ),
             const SizedBox(height: 12),
             TextFormField(
               controller: _hoursCtrl,
-              decoration: const InputDecoration(labelText: 'Working Hours', hintText: 'e.g. Mon-Fri 8:00 - 18:00', border: OutlineInputBorder()),
+              decoration: InputDecoration(labelText: loc.garageWorkingHoursLabel, hintText: loc.garageWorkingHoursHint, border: const OutlineInputBorder()),
             ),
             const SizedBox(height: 20),
             SizedBox(
@@ -125,7 +112,7 @@ class _EditGarageScreenState extends State<EditGarageScreen> {
               child: ElevatedButton.icon(
                 onPressed: provider.isLoading ? null : _save,
                 icon: const Icon(Icons.save, color: Colors.white),
-                label: Text(provider.isLoading ? 'Saving...' : 'Save Changes', style: const TextStyle(color: Colors.white)),
+                label: Text(provider.isLoading ? loc.savingInProgress : loc.saveChanges, style: const TextStyle(color: Colors.white)),
                 style: ElevatedButton.styleFrom(backgroundColor: Colors.blue, padding: const EdgeInsets.symmetric(vertical: 14)),
               ),
             ),
@@ -147,9 +134,10 @@ class _EditGarageScreenState extends State<EditGarageScreen> {
       workingHours: _hoursCtrl.text.trim().isEmpty ? null : _hoursCtrl.text.trim(),
     );
 
+    final loc = AppLocalizations.of(context);
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text(ok ? 'Garage updated' : provider.error ?? 'Failed to update'),
+        content: Text(ok ? loc.garageUpdatedSuccess : provider.error ?? loc.garageUpdateFailed),
         backgroundColor: ok ? Colors.green : Colors.red,
       ),
     );

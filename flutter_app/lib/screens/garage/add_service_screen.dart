@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../providers/garage_provider.dart';
+import '../../l10n/gen/app_localizations.dart';
 
 class AddServiceScreen extends StatefulWidget {
   const AddServiceScreen({super.key});
@@ -36,10 +37,11 @@ class _AddServiceScreenState extends State<AddServiceScreen> {
         estimatedDurationMinutes: _durationController.text.trim().isEmpty ? null : int.parse(_durationController.text.trim()),
       );
 
+      final loc = AppLocalizations.of(context);
       if (success) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Service added successfully!'),
+            content: Text(loc.serviceAddedSuccess),
             backgroundColor: Colors.green,
           ),
         );
@@ -47,7 +49,7 @@ class _AddServiceScreenState extends State<AddServiceScreen> {
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(garageProvider.error ?? 'Failed to add service'),
+            content: Text(garageProvider.error ?? loc.serviceAddFailed),
             backgroundColor: Colors.red,
           ),
         );
@@ -57,9 +59,10 @@ class _AddServiceScreenState extends State<AddServiceScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final loc = AppLocalizations.of(context);
     return Scaffold(
       appBar: AppBar(
-        title: Text('Add Service'),
+        title: Text(loc.addServiceTitle),
         backgroundColor: Colors.blue,
         foregroundColor: Colors.white,
       ),
@@ -71,7 +74,7 @@ class _AddServiceScreenState extends State<AddServiceScreen> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                'Add New Service',
+                loc.addNewServiceHeading,
                 style: TextStyle(
                   fontSize: 24,
                   fontWeight: FontWeight.bold,
@@ -79,7 +82,7 @@ class _AddServiceScreenState extends State<AddServiceScreen> {
               ),
               SizedBox(height: 8),
               Text(
-                'Create a new service that customers can request from your garage.',
+                loc.addServiceDescription,
                 style: TextStyle(
                   color: Colors.grey[600],
                   fontSize: 16,
@@ -90,8 +93,8 @@ class _AddServiceScreenState extends State<AddServiceScreen> {
               TextFormField(
                 controller: _nameController,
                 decoration: InputDecoration(
-                  labelText: 'Service Name *',
-                  hintText: 'e.g., Oil Change, Tire Repair, Engine Diagnostic',
+                  labelText: loc.serviceNameLabel,
+                  hintText: loc.serviceNameHint,
                   prefixIcon: Icon(Icons.build),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
@@ -99,7 +102,7 @@ class _AddServiceScreenState extends State<AddServiceScreen> {
                 ),
                 validator: (value) {
                   if (value == null || value.trim().isEmpty) {
-                    return 'Please enter service name';
+                    return loc.serviceNameRequired;
                   }
                   return null;
                 },
@@ -109,8 +112,8 @@ class _AddServiceScreenState extends State<AddServiceScreen> {
               TextFormField(
                 controller: _descriptionController,
                 decoration: InputDecoration(
-                  labelText: 'Description (Optional)',
-                  hintText: 'Describe what this service includes',
+                  labelText: loc.serviceDescriptionOptional,
+                  hintText: loc.serviceDescriptionHint,
                   prefixIcon: Icon(Icons.description),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
@@ -124,8 +127,8 @@ class _AddServiceScreenState extends State<AddServiceScreen> {
                 controller: _priceController,
                 keyboardType: TextInputType.numberWithOptions(decimal: true),
                 decoration: InputDecoration(
-                  labelText: 'Price *',
-                  hintText: 'Enter price in dollars',
+                  labelText: loc.price,
+                  hintText: loc.priceHint,
                   prefixIcon: Icon(Icons.attach_money),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
@@ -133,11 +136,11 @@ class _AddServiceScreenState extends State<AddServiceScreen> {
                 ),
                 validator: (value) {
                   if (value == null || value.trim().isEmpty) {
-                    return 'Please enter price';
+                    return loc.priceRequired;
                   }
                   final price = double.tryParse(value.trim());
                   if (price == null || price <= 0) {
-                    return 'Please enter a valid price';
+                    return loc.enterValidPrice;
                   }
                   return null;
                 },
@@ -148,10 +151,10 @@ class _AddServiceScreenState extends State<AddServiceScreen> {
                 controller: _durationController,
                 keyboardType: TextInputType.number,
                 decoration: InputDecoration(
-                  labelText: 'Estimated Duration (Optional)',
-                  hintText: 'Duration in minutes',
+                  labelText: loc.estimatedDurationOptional,
+                  hintText: loc.durationMinutesHint,
                   prefixIcon: Icon(Icons.access_time),
-                  suffixText: 'minutes',
+                  suffixText: loc.minutesUnit,
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
                   ),
@@ -160,7 +163,7 @@ class _AddServiceScreenState extends State<AddServiceScreen> {
                   if (value != null && value.trim().isNotEmpty) {
                     final duration = int.tryParse(value.trim());
                     if (duration == null || duration <= 0) {
-                      return 'Please enter a valid duration';
+                      return loc.enterValidDuration;
                     }
                   }
                   return null;
@@ -183,7 +186,7 @@ class _AddServiceScreenState extends State<AddServiceScreen> {
                         Icon(Icons.info, color: Colors.blue),
                         SizedBox(width: 8),
                         Text(
-                          'Service Tips',
+                          loc.serviceTipsTitle,
                           style: TextStyle(
                             fontWeight: FontWeight.bold,
                             color: Colors.blue[800],
@@ -193,10 +196,7 @@ class _AddServiceScreenState extends State<AddServiceScreen> {
                     ),
                     SizedBox(height: 8),
                     Text(
-                      '• Be specific about what the service includes\n'
-                      '• Set competitive prices for your area\n'
-                      '• Provide realistic time estimates\n'
-                      '• You can edit or remove services later',
+                      loc.serviceTipsBullets,
                       style: TextStyle(color: Colors.blue[700]),
                     ),
                   ],
@@ -219,8 +219,8 @@ class _AddServiceScreenState extends State<AddServiceScreen> {
                       ),
                       child: garageProvider.isLoading
                           ? CircularProgressIndicator(color: Colors.white)
-                          : Text(
-                              'Add Service',
+              : Text(
+                loc.addServiceTitle,
                               style: TextStyle(
                                 fontSize: 16,
                                 fontWeight: FontWeight.bold,

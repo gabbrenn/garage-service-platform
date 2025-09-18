@@ -18,13 +18,17 @@ class GarageProvider with ChangeNotifier {
   bool get isLoading => _isLoading;
   String? get error => _error;
 
-  void setLoading(bool loading) {
-    _isLoading = loading;
-    notifyListeners();
+  void _setState({bool? loading, String? error, bool notify = true}) {
+    if (loading != null) _isLoading = loading;
+    if (error != null) _error = error;
+    if (notify) notifyListeners();
   }
 
-  void setError(String? error) {
-    _error = error;
+  void setLoading(bool loading) => _setState(loading: loading);
+  void setError(String? error) => _setState(error: error);
+
+  void _batch(void Function() updates) {
+    updates();
     notifyListeners();
   }
 
@@ -44,15 +48,13 @@ class GarageProvider with ChangeNotifier {
 
   Future<void> loadGarageServices(int garageId) async {
     try {
-      setLoading(true);
-      setError(null);
+      _setState(loading: true, error: null);
 
       _garageServices = await ApiService.getGarageServices(garageId);
       
-      setLoading(false);
+      _setState(loading: false);
     } catch (e) {
-      setError(e.toString());
-      setLoading(false);
+      _setState(error: e.toString(), loading: false);
     }
   }
 
@@ -88,15 +90,11 @@ class GarageProvider with ChangeNotifier {
 
   Future<void> loadMyGarage() async {
     try {
-      setLoading(true);
-      setError(null);
-
-      _myGarage = await ApiService.getMyGarage();
-      
-      setLoading(false);
+      _batch(() { _isLoading = true; _error = null; });
+      final garage = await ApiService.getMyGarage();
+      _batch(() { _myGarage = garage; _isLoading = false; });
     } catch (e) {
-      setError(e.toString());
-      setLoading(false);
+      _batch(() { _error = e.toString(); _isLoading = false; });
     }
   }
 

@@ -1,0 +1,21 @@
+{
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"label": "Build backend after health endpoint",
+			"type": "shell",
+			"command": "powershell.exe",
+			"args": [
+				"-NoProfile",
+				"-ExecutionPolicy",
+				"Bypass",
+				"-Command",
+				"cd d:\\garage-service-platform\\backend; mvn -DskipTests=true clean package"
+			],
+			"problemMatcher": [
+				"$maven-stylish"
+			],
+			"group": "build"
+		}
+	]
+}

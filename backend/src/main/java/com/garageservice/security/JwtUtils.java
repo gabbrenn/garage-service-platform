@@ -1,7 +1,6 @@
 package com.garageservice.security;
 
 import io.jsonwebtoken.*;
-import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -9,7 +8,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Component;
 
-import java.security.Key;
 import java.util.Date;
 import javax.crypto.SecretKey;
 
@@ -23,6 +21,9 @@ public class JwtUtils {
     @Value("${app.jwtExpirationMs:86400000}")
     private int jwtExpirationMs;
 
+    @Value("${app.jwtRefreshExpirationMs:604800000}")
+    private int jwtRefreshExpirationMs;
+
     private SecretKey key(){
         return Keys.hmacShaKeyFor(jwtSecret.getBytes());
     }
@@ -32,10 +33,31 @@ public class JwtUtils {
 
         return Jwts.builder()
                 .setSubject((userPrincipal.getEmail()))
+                .claim("roles", userPrincipal.getAuthorities().stream().map(a -> a.getAuthority()).toList())
                 .setIssuedAt(new Date())
                 .setExpiration(new Date((new Date()).getTime() + jwtExpirationMs))
                 .signWith(key(), SignatureAlgorithm.HS256)
                 .compact();
+    }
+
+    public String generateRefreshToken(Authentication authentication) {
+        UserPrincipal userPrincipal = (UserPrincipal) authentication.getPrincipal();
+        return Jwts.builder()
+                .setSubject(userPrincipal.getEmail())
+                .claim("type", "refresh")
+                .setIssuedAt(new Date())
+                .setExpiration(new Date((new Date()).getTime() + jwtRefreshExpirationMs))
+                .signWith(key(), SignatureAlgorithm.HS256)
+                .compact();
+    }
+
+    public boolean isRefreshToken(String token){
+        try {
+            Claims c = Jwts.parserBuilder().setSigningKey(key()).build().parseClaimsJws(token).getBody();
+            return "refresh".equals(c.get("type"));
+        } catch (Exception e){
+            return false;
+        }
     }
 
 

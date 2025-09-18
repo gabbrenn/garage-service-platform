@@ -4,6 +4,8 @@
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
     <uses-permission android:name="android.permission.INTERNET" />
+    <!-- Android 13+ notifications permission -->
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
     
     <application
         android:label="garage_service_app"
@@ -35,6 +37,9 @@
         <meta-data
             android:name="flutterEmbedding"
             android:value="2" />
+        <!-- Default notification channel id for FCM (optional; we also create channel in Dart) -->
+        <meta-data android:name="com.google.firebase.messaging.default_notification_channel_id"
+            android:value="garage_service_events" />
             
         <!-- Google Maps API Key -->
         <meta-data android:name="com.google.android.geo.API_KEY"

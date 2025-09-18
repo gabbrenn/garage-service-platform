@@ -2,6 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../providers/service_request_provider.dart';
 import '../../models/service_request.dart';
+import '../../providers/garage_provider.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'dart:math' as math;
+import '../../l10n/gen/app_localizations.dart';
+import '../../services/api_service.dart';
+import '../../utils/polyline_decode.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class ServiceRequestsScreen extends StatefulWidget {
   const ServiceRequestsScreen({super.key});
@@ -14,7 +21,8 @@ class _ServiceRequestsScreenState extends State<ServiceRequestsScreen> {
   @override
   void initState() {
     super.initState();
-    _loadRequests();
+    // Defer to next frame to avoid provider notifying during build
+    WidgetsBinding.instance.addPostFrameCallback((_) { _loadRequests(); });
   }
 
   Future<void> _loadRequests() async {
@@ -22,13 +30,110 @@ class _ServiceRequestsScreenState extends State<ServiceRequestsScreen> {
     await serviceRequestProvider.loadGarageRequests();
   }
 
+  void _showLocationMap(ServiceRequest request) {
+    final garageProvider = Provider.of<GarageProvider>(context, listen: false);
+    final myGarage = garageProvider.myGarage;
+    if (myGarage == null) {
+      final loc = AppLocalizations.of(context);
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(loc.garageLocationNotLoaded)));
+      return;
+    }
+    if (request.customerLatitude == 0.0 && request.customerLongitude == 0.0) {
+      final loc = AppLocalizations.of(context);
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(loc.customerLocationNotProvided)));
+      return;
+    }
+
+    final garagePos = LatLng(myGarage.latitude, myGarage.longitude);
+    final customerPos = LatLng(request.customerLatitude, request.customerLongitude);
+
+    double haversineKm(LatLng a, LatLng b) {
+      const r = 6371.0;
+      double toRad(double d) => d * math.pi / 180.0;
+      final dLat = toRad(b.latitude - a.latitude);
+      final dLon = toRad(b.longitude - a.longitude);
+      final lat1 = toRad(a.latitude);
+      final lat2 = toRad(b.latitude);
+      final h = math.sin(dLat/2) * math.sin(dLat/2) + math.cos(lat1)*math.cos(lat2)*math.sin(dLon/2)*math.sin(dLon/2);
+      final c = 2 * math.atan2(math.sqrt(h), math.sqrt(1-h));
+      return r * c;
+    }
+
+    double distanceKm = haversineKm(garagePos, customerPos);
+    // Try road distance from backend (best-effort)
+    () async {
+      final res = await ApiService.getRoadDistance(
+        originLat: garagePos.latitude,
+        originLng: garagePos.longitude,
+        destLat: customerPos.latitude,
+        destLng: customerPos.longitude,
+      );
+      if (!mounted) return;
+      if (res != null && res['distanceKm'] != null) {
+        setState(() {
+          distanceKm = res['distanceKm']!;
+        });
+      }
+    }();
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      builder: (ctx) {
+        return SafeArea(
+          child: SizedBox(
+            height: 420,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Builder(
+                  builder: (innerCtx) {
+                    final sheetLoc = AppLocalizations.of(innerCtx);
+                    return Padding(
+                      padding: const EdgeInsets.fromLTRB(16,12,16,8),
+                      child: Row(
+                        children: [
+                          const Icon(Icons.map, color: Colors.blue),
+                          const SizedBox(width: 8),
+                          Expanded(child: Text(sheetLoc.customerLocationTitle, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold))),
+                          Text(sheetLoc.distanceKmLabel(distanceKm.toStringAsFixed(2)), style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.blue)),
+                          IconButton(onPressed: () => Navigator.pop(innerCtx), icon: const Icon(Icons.close))
+                        ],
+                      ),
+                    );
+                  },
+                ),
+                Expanded(
+                  child: _RequestMap(garagePos: garagePos, customerPos: customerPos),
+                ),
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(16,8,16,12),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text('${AppLocalizations.of(ctx).garageLabel}: ${myGarage.name}', style: const TextStyle(fontSize: 12, color: Colors.grey)),
+                      Text('${AppLocalizations.of(ctx).customerLabel}: Lat ${customerPos.latitude.toStringAsFixed(5)}, Lng ${customerPos.longitude.toStringAsFixed(5)}', style: const TextStyle(fontSize: 12, color: Colors.grey)),
+                      if (request.customerAddress!=null && request.customerAddress!.trim().isNotEmpty)
+                        Text('${AppLocalizations.of(ctx).addressLabel}: ${request.customerAddress}', style: const TextStyle(fontSize: 12, color: Colors.grey)),
+                    ],
+                  ),
+                )
+              ],
+            ),
+          ),
+        );
+      }
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final serviceRequestProvider = Provider.of<ServiceRequestProvider>(context);
+    final loc = AppLocalizations.of(context);
 
     return Scaffold(
       appBar: AppBar(
-        title: Text('Service Requests'),
+        title: Text(loc.serviceRequestsTitle),
         backgroundColor: Colors.blue,
         foregroundColor: Colors.white,
         actions: [
@@ -47,13 +152,13 @@ class _ServiceRequestsScreenState extends State<ServiceRequestsScreen> {
                     children: [
                       Icon(Icons.error, size: 64, color: Colors.red),
                       SizedBox(height: 16),
-                      Text('Error loading requests'),
+                      Text(loc.errorLoadingRequests),
                       SizedBox(height: 8),
                       Text(serviceRequestProvider.error!),
                       SizedBox(height: 16),
                       ElevatedButton(
                         onPressed: _loadRequests,
-                        child: Text('Retry'),
+                        child: Text(loc.retry),
                       ),
                     ],
                   ),
@@ -66,11 +171,11 @@ class _ServiceRequestsScreenState extends State<ServiceRequestsScreen> {
                           Icon(Icons.inbox, size: 64, color: Colors.grey),
                           SizedBox(height: 16),
                           Text(
-                            'No requests yet',
+                            loc.noRequestsYet,
                             style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                           ),
                           SizedBox(height: 8),
-                          Text('Service requests from customers will appear here'),
+                          Text(loc.noRequestsYetLong),
                         ],
                       ),
                     )
@@ -144,9 +249,14 @@ class _ServiceRequestsScreenState extends State<ServiceRequestsScreen> {
                         ),
                       ),
                       Text(
-                        (request.customer?.phoneNumber?.isNotEmpty == true)
-                            ? request.customer!.phoneNumber
-                            : (request.customerPhone ?? 'No phone'),
+                        (() {
+                          final cust = request.customer;
+                          if (cust != null) {
+                            final pn = cust.phoneNumber; // assume non-nullable in model
+                            if (pn.isNotEmpty) return pn;
+                          }
+                          return request.customerPhone ?? 'No phone';
+                        })(),
                         style: TextStyle(
                           color: Colors.grey[600],
                           fontSize: 14,
@@ -287,6 +397,16 @@ class _ServiceRequestsScreenState extends State<ServiceRequestsScreen> {
               ),
             ],
             
+            SizedBox(height: 12),
+            Align(
+              alignment: Alignment.centerLeft,
+              child: TextButton.icon(
+                onPressed: () => _showLocationMap(request),
+                icon: const Icon(Icons.map),
+                label: const Text('View Location Map'),
+              ),
+            ),
+            
             if (request.status == RequestStatus.PENDING) ...[
               SizedBox(height: 16),
               Row(
@@ -369,20 +489,21 @@ class _ServiceRequestsScreenState extends State<ServiceRequestsScreen> {
     final responseController = TextEditingController();
     final etaController = TextEditingController();
 
+    final loc = AppLocalizations.of(context);
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: Text(status == RequestStatus.ACCEPTED ? 'Accept Request' : 'Reject Request'),
+        title: Text(status == RequestStatus.ACCEPTED ? loc.acceptRequestTitle : loc.rejectRequestTitle),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             TextField(
               controller: responseController,
               decoration: InputDecoration(
-                labelText: 'Response Message',
+                labelText: loc.responseMessageLabel,
                 hintText: status == RequestStatus.ACCEPTED 
-                    ? 'We\'ll be there soon!'
-                    : 'Sorry, we cannot fulfill this request.',
+                    ? loc.acceptDefaultResponse
+                    : loc.rejectDefaultResponse,
                 border: OutlineInputBorder(),
               ),
               maxLines: 3,
@@ -393,8 +514,8 @@ class _ServiceRequestsScreenState extends State<ServiceRequestsScreen> {
                 controller: etaController,
                 keyboardType: TextInputType.number,
                 decoration: InputDecoration(
-                  labelText: 'Estimated Arrival (minutes)',
-                  hintText: 'e.g., 30',
+                  labelText: loc.estimatedArrivalMinutesLabel,
+                  hintText: loc.minutesExampleHint,
                   border: OutlineInputBorder(),
                 ),
               ),
@@ -404,7 +525,7 @@ class _ServiceRequestsScreenState extends State<ServiceRequestsScreen> {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: Text('Cancel'),
+            child: Text(loc.cancelButton),
           ),
           ElevatedButton(
             onPressed: () {
@@ -420,7 +541,7 @@ class _ServiceRequestsScreenState extends State<ServiceRequestsScreen> {
               backgroundColor: status == RequestStatus.ACCEPTED ? Colors.green : Colors.red,
             ),
             child: Text(
-              status == RequestStatus.ACCEPTED ? 'Accept' : 'Reject',
+              status == RequestStatus.ACCEPTED ? loc.acceptRequestButton : loc.rejectRequestButton,
               style: TextStyle(color: Colors.white),
             ),
           ),
@@ -439,17 +560,19 @@ class _ServiceRequestsScreenState extends State<ServiceRequestsScreen> {
       estimatedArrivalMinutes: eta,
     );
 
+    final loc = AppLocalizations.of(context);
     if (success) {
+      final statusText = status.toString().split('.').last.toLowerCase();
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Request ${status.toString().split('.').last.toLowerCase()} successfully!'),
+          content: Text(loc.requestRespondGenericSuccess(statusText)),
           backgroundColor: status == RequestStatus.ACCEPTED ? Colors.green : Colors.red,
         ),
       );
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(serviceRequestProvider.error ?? 'Failed to respond to request'),
+          content: Text(serviceRequestProvider.error ?? loc.requestRespondFailed),
           backgroundColor: Colors.red,
         ),
       );
@@ -464,20 +587,205 @@ class _ServiceRequestsScreenState extends State<ServiceRequestsScreen> {
       status: status,
     );
 
+    final loc = AppLocalizations.of(context);
     if (success) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Request status updated successfully!'),
+          content: Text(loc.requestStatusUpdateSuccess),
           backgroundColor: Colors.green,
         ),
       );
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(serviceRequestProvider.error ?? 'Failed to update request'),
+          content: Text(serviceRequestProvider.error ?? loc.requestStatusUpdateFailed),
           backgroundColor: Colors.red,
         ),
       );
+    }
+  }
+}
+
+class _RequestMap extends StatefulWidget {
+  final LatLng garagePos;
+  final LatLng customerPos;
+  const _RequestMap({required this.garagePos, required this.customerPos});
+  @override
+  State<_RequestMap> createState() => _RequestMapState();
+}
+
+class _RequestMapState extends State<_RequestMap> {
+  GoogleMapController? _controller;
+  Set<Polyline> _polylines = {};
+  MapType _mapType = MapType.normal;
+  bool _showTraffic = false;
+  double? _lastRouteKm;
+  double? _lastRouteMinutes;
+
+  @override
+  void initState() {
+    super.initState();
+    // Fetch route polyline best-effort
+    () async {
+      final res = await ApiService.getRoadDistance(
+        originLat: widget.garagePos.latitude,
+        originLng: widget.garagePos.longitude,
+        destLat: widget.customerPos.latitude,
+        destLng: widget.customerPos.longitude,
+      );
+      if (!mounted) return;
+      if (res != null && res['polyline'] is String && (res['polyline'] as String).isNotEmpty) {
+        setState(() {
+          _lastRouteKm = (res['distanceKm'] as num?)?.toDouble();
+          _lastRouteMinutes = (res['durationMinutes'] as num?)?.toDouble();
+        });
+        final precision = (res['precision'] is int) ? res['precision'] as int : 6;
+        final pts = decodePolyline(res['polyline'] as String, precision: precision)
+            .map((p) => LatLng(p.latitude, p.longitude))
+            .toList();
+        setState(() {
+          _polylines = {
+            Polyline(
+              polylineId: const PolylineId('route'),
+              points: pts,
+              color: Colors.blue,
+              width: 5,
+            )
+          };
+        });
+        _fitToBounds();
+      } else {
+        setState(() {
+          _lastRouteKm = null;
+          _lastRouteMinutes = null;
+          _polylines = {
+            Polyline(
+              polylineId: const PolylineId('route'),
+              points: [widget.garagePos, widget.customerPos],
+              color: Colors.blue,
+              width: 4,
+              patterns: [PatternItem.dash(20), PatternItem.gap(10)],
+            )
+          };
+        });
+        _fitToBounds();
+      }
+    }();
+  }
+  @override
+  Widget build(BuildContext context) {
+    final markers = <Marker>{
+      Marker(markerId: const MarkerId('garage'), position: widget.garagePos, infoWindow: const InfoWindow(title: 'Garage')), 
+      Marker(markerId: const MarkerId('customer'), position: widget.customerPos, infoWindow: const InfoWindow(title: 'Customer')),
+    };
+    return Stack(
+      children: [
+        GoogleMap(
+          initialCameraPosition: CameraPosition(target: widget.garagePos, zoom: 12),
+          markers: markers,
+          polylines: _polylines,
+          onMapCreated: (c){
+            _controller = c;
+            // Fit bounds initially
+            _fitToBounds();
+          },
+          zoomControlsEnabled: true,
+          myLocationButtonEnabled: true,
+          compassEnabled: true,
+          mapType: _mapType,
+          trafficEnabled: _showTraffic,
+        ),
+        Positioned(
+          right: 12,
+          top: 12,
+          child: Column(
+            children: [
+              FloatingActionButton.small(
+                heroTag: 'recenter_req',
+                onPressed: _fitToBounds,
+                child: const Icon(Icons.center_focus_strong),
+              ),
+              const SizedBox(height: 8),
+              FloatingActionButton.small(
+                heroTag: 'maptype_req',
+                onPressed: () {
+                  setState(() { _mapType = _mapType == MapType.normal ? MapType.hybrid : MapType.normal; });
+                },
+                child: const Icon(Icons.layers),
+              ),
+              const SizedBox(height: 8),
+              FloatingActionButton.small(
+                heroTag: 'traffic_req',
+                onPressed: () { setState(() { _showTraffic = !_showTraffic; }); },
+                child: Icon(_showTraffic ? Icons.traffic : Icons.traffic_outlined),
+              ),
+            ],
+          ),
+        ),
+        if (_lastRouteKm != null || _lastRouteMinutes != null)
+          Positioned(
+            left: 12,
+            bottom: 12,
+            right: 12,
+            child: Card(
+              color: Colors.white,
+              elevation: 4,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Row(children:[
+                      const Icon(Icons.directions_car, color: Colors.blue), const SizedBox(width: 8),
+                      if (_lastRouteKm != null) Text('${_lastRouteKm!.toStringAsFixed(1)} km'),
+                      if (_lastRouteMinutes != null) ...[
+                        const SizedBox(width: 12),
+                        Text('${_lastRouteMinutes!.toStringAsFixed(0)} min'),
+                      ],
+                    ]),
+                    TextButton.icon(
+                      onPressed: _openInGoogleMaps,
+                      icon: const Icon(Icons.navigation),
+                      label: const Text('Navigate'),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+      ],
+    );
+  }
+
+  void _fitToBounds() {
+    if (_controller == null) return;
+    final sw = LatLng(
+      math.min(widget.garagePos.latitude, widget.customerPos.latitude),
+      math.min(widget.garagePos.longitude, widget.customerPos.longitude),
+    );
+    final ne = LatLng(
+      math.max(widget.garagePos.latitude, widget.customerPos.latitude),
+      math.max(widget.garagePos.longitude, widget.customerPos.longitude),
+    );
+    Future.delayed(const Duration(milliseconds: 250), () {
+      _controller?.animateCamera(
+        CameraUpdate.newLatLngBounds(
+          LatLngBounds(southwest: sw, northeast: ne),
+          60,
+        ),
+      );
+    });
+  }
+
+  Future<void> _openInGoogleMaps() async {
+    final g = widget.garagePos;
+    final c = widget.customerPos;
+    final uri = Uri.parse('https://www.google.com/maps/dir/?api=1&origin=${g.latitude},${g.longitude}&destination=${c.latitude},${c.longitude}&travelmode=driving');
+    if (await canLaunchUrl(uri)) {
+      await launchUrl(uri, mode: LaunchMode.externalApplication);
+    } else {
+      await launchUrl(uri, mode: LaunchMode.platformDefault);
     }
   }
 }

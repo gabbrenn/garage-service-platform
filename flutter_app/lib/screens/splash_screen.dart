@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 import '../services/api_service.dart';
+import 'package:provider/provider.dart';
+import '../providers/notification_provider.dart';
+import '../l10n/gen/app_localizations.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -19,51 +22,39 @@ class _SplashScreenState extends State<SplashScreen> {
     await Future.delayed(Duration(seconds: 2)); // Show splash for 2 seconds
     
     final token = await ApiService.getToken();
-    
     if (token != null) {
-      // User is logged in, navigate to appropriate home screen
-      // For now, navigate to login to get user info
-      Navigator.pushReplacementNamed(context, '/login');
-    } else {
-      // User is not logged in
-      Navigator.pushReplacementNamed(context, '/login');
+      // We don't have user details cached yet, so still go to login, but try preload notifications (will be reloaded after actual login)
+      try {
+        final notif = Provider.of<NotificationProvider>(context, listen:false);
+        // Without user id we can't configure realtime; skip configureUser until login returns id.
+        await notif.preloadIfPossible();
+      } catch(_){}
     }
+    Navigator.pushReplacementNamed(context, '/login');
   }
 
   @override
   Widget build(BuildContext context) {
+    final loc = AppLocalizations.of(context);
     return Scaffold(
       backgroundColor: Colors.blue,
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(
-              Icons.build,
-              size: 100,
-              color: Colors.white,
-            ),
-            SizedBox(height: 20),
+            const Icon(Icons.build, size: 100, color: Colors.white),
+            const SizedBox(height: 20),
             Text(
-              'Garage Service',
-              style: TextStyle(
-                fontSize: 32,
-                fontWeight: FontWeight.bold,
-                color: Colors.white,
-              ),
+              loc.splashAppName,
+              style: const TextStyle(fontSize: 32, fontWeight: FontWeight.bold, color: Colors.white),
             ),
-            SizedBox(height: 10),
+            const SizedBox(height: 10),
             Text(
-              'Find nearby garage services',
-              style: TextStyle(
-                fontSize: 16,
-                color: Colors.white70,
-              ),
+              loc.splashTagline,
+              style: const TextStyle(fontSize: 16, color: Colors.white70),
             ),
-            SizedBox(height: 50),
-            CircularProgressIndicator(
-              valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-            ),
+            const SizedBox(height: 50),
+            const CircularProgressIndicator(valueColor: AlwaysStoppedAnimation<Color>(Colors.white)),
           ],
         ),
       ),

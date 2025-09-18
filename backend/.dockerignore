@@ -1,0 +1,25 @@
+# Maven target output
+target/
+
+# Git
+.git/
+.gitignore
+
+# IDE files
+.idea/
+.vscode/
+*.iml
+
+# OS files
+.DS_Store
+
+# Local env and secrets (Render should use environment variables)
+.env
+*.local
+*.secret
+
+# Node/Flutter/co-resident workspace noise
+node_modules/
+build/
+dist/
+coverage/

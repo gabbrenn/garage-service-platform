@@ -24,7 +24,12 @@ public class SignupRequest {
     private String phoneNumber;
 
     @NotBlank
-    @Size(min = 6, max = 40)
+    @Size(min = 8, max = 40)
+    // At least one upper, one lower, one digit, one special character
+    @jakarta.validation.constraints.Pattern(
+        regexp = "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[!@#$%^&*()_+\\-={}\\[\\]:\\\\\";'<>?,./]).{8,40}$",
+        message = "Password must contain upper, lower, digit, special char and be 8-40 chars"
+    )
     private String password;
 
     private User.UserType userType;
