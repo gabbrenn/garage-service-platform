@@ -284,3 +284,42 @@ For support and questions:
 - Advanced search and filtering
 - Multi-language support
 - Garage analytics dashboard
+
+## Environment configuration for Flutter (frontend)
+
+For flexible per-environment settings without committing secrets, pass environment values at run/build time.
+
+Option A: Individual defines
+- Use `--dart-define` flags for single values (already supported by the app via `String.fromEnvironment`).
+- Examples (Windows PowerShell):
+   - `flutter run -d chrome --dart-define=API_BASE_URL=http://localhost:8080/api`
+   - `flutter run -d chrome --dart-define=GOOGLE_DIRECTIONS_API_KEY=YOUR_KEY`
+
+Option B: JSON file (bulk)
+- Place JSON files in `flutter_app` (these are git-ignored):
+   - `.env.dev.json`
+   - `.env.prod.json`
+- Example contents:
+   - `.env.dev.json`
+      ```json
+      {
+         "API_BASE_URL": "http://10.0.2.2:8080/api",
+         "GOOGLE_DIRECTIONS_API_KEY": "REPLACE_WITH_DEV_DIRECTIONS_KEY",
+         "FIREBASE_VAPID_KEY": "REPLACE_WITH_DEV_VAPID_IF_USED"
+      }
+      ```
+   - `.env.prod.json`
+      ```json
+      {
+         "API_BASE_URL": "https://garage-service-platform.onrender.com/api",
+         "GOOGLE_DIRECTIONS_API_KEY": "REPLACE_WITH_PROD_DIRECTIONS_KEY",
+         "FIREBASE_VAPID_KEY": "REPLACE_WITH_PROD_VAPID_IF_USED"
+      }
+      ```
+- Run/build with the file (Windows PowerShell):
+   - `flutter run -d chrome --dart-define-from-file=.env.dev.json`
+   - `flutter build apk --dart-define-from-file=.env.prod.json`
+
+Notes
+- Native Maps keys in `android/app/src/main/AndroidManifest.xml` and `ios/Runner/Info.plist` are left as-is and used automatically by the app.
+- On web, the Google Maps JS loader reads a meta tag named `google_maps_api_key` in `flutter_app/web/index.html`. Keep real keys out of git; inject the meta locally or via CI/CD.

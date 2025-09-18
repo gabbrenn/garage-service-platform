@@ -31,7 +31,15 @@ migrate_working_dir/
 .flutter-plugins-dependencies
 .pub-cache/
 .pub/
+/# Root-level Flutter build dir
 /build/
+
+# Android build outputs inside the Flutter app
+/android/build/
+/android/app/build/
+
+# Generated localization files (can be re-generated)
+/lib/l10n/gen/
 
 # Symbolication related
 app.*.symbols
@@ -43,3 +51,7 @@ app.*.map.json
 /android/app/debug
 /android/app/profile
 /android/app/release
+
+# Local environment JSON files for --dart-define-from-file (do not commit secrets)
+/.env.*.json
+/.env.json
