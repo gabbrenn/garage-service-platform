@@ -8,8 +8,11 @@ import 'package:share_plus/share_plus.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:provider/provider.dart';
 import '../../providers/report_provider.dart';
+import '../../providers/service_request_provider.dart';
 import '../../models/daily_report_entry.dart';
+import '../../models/service_request.dart';
 import '../../utils/csv_download_util.dart';
+import '../../theme/app_colors.dart';
 
 class GarageReportScreen extends StatefulWidget {
   const GarageReportScreen({super.key});
@@ -25,7 +28,14 @@ class _GarageReportScreenState extends State<GarageReportScreen> {
   @override
   void initState() {
     super.initState();
-    Future.microtask(() => context.read<ReportProvider>().loadReport());
+    Future.microtask(() async {
+      // Load aggregated report
+      await context.read<ReportProvider>().loadReport();
+      // Also load detailed requests for the garage so we can build the detailed table
+      try {
+        await context.read<ServiceRequestProvider>().loadGarageRequests();
+      } catch (_) {}
+    });
   }
 
   Future<void> _pickRange() async {
@@ -53,6 +63,21 @@ class _GarageReportScreenState extends State<GarageReportScreen> {
   Widget build(BuildContext context) {
     final provider = context.watch<ReportProvider>();
     final report = provider.report;
+    final requestProvider = context.watch<ServiceRequestProvider>();
+    final allRequests = requestProvider.garageRequests;
+    final from = _range?.start;
+    final to = _range?.end;
+    // Filter requests by selected date range (inclusive) if range chosen
+    List<ServiceRequest> filteredRequests = allRequests;
+    if (from != null && to != null) {
+      filteredRequests = allRequests.where((r) {
+        final d = DateTime(r.createdAt.year, r.createdAt.month, r.createdAt.day);
+        final start = DateTime(from.year, from.month, from.day);
+        final end = DateTime(to.year, to.month, to.day);
+        return (d.isAtSameMomentAs(start) || d.isAfter(start)) && (d.isAtSameMomentAs(end) || d.isBefore(end));
+      }).toList();
+    }
+    filteredRequests.sort((a,b) => b.createdAt.compareTo(a.createdAt));
 
     final loc = AppLocalizations.of(context);
     return Scaffold(
@@ -63,6 +88,12 @@ class _GarageReportScreenState extends State<GarageReportScreen> {
             onPressed: report == null ? null : () => _exportCsv(report),
             tooltip: loc.exportCsvTooltip,
             icon: const Icon(Icons.download),
+          ),
+          // Detailed export button
+          IconButton(
+            onPressed: filteredRequests.isEmpty ? null : () => _exportDetailedCsv(filteredRequests, loc),
+            tooltip: 'Export detailed CSV',
+            icon: const Icon(Icons.table_view),
           ),
           IconButton(
             onPressed: report == null ? null : () => _shareReport(report),
@@ -86,7 +117,7 @@ class _GarageReportScreenState extends State<GarageReportScreen> {
           ),
         ],
       ),
-      body: provider.isLoading
+      body: provider.isLoading && report == null
           ? const Center(child: CircularProgressIndicator())
           : provider.error != null
               ? _ErrorView(message: provider.error!, onRetry: () => provider.loadReport(from: _range?.start, to: _range?.end))
@@ -105,6 +136,11 @@ class _GarageReportScreenState extends State<GarageReportScreen> {
                             _EtaLineChart(entries: report.entries),
                           ],
                           const SizedBox(height: 24),
+                          _DetailedRequestsSection(
+                            requests: filteredRequests,
+                            loading: requestProvider.isLoading && allRequests.isEmpty,
+                          ),
+                          const SizedBox(height: 24),
                           Text(loc.dailyBreakdownTitle, style: Theme.of(context).textTheme.titleMedium),
                           const SizedBox(height: 8),
                           ...report.entries.map((e) => _DailyCard(entry: e)),
@@ -112,6 +148,39 @@ class _GarageReportScreenState extends State<GarageReportScreen> {
                       ),
                     ),
     );
+  }
+
+  Future<void> _exportDetailedCsv(List<ServiceRequest> requests, AppLocalizations loc) async {
+    try {
+      final buffer = StringBuffer();
+      buffer.writeln('Detailed Service Requests');
+      if (_range != null) {
+        buffer.writeln('Period,${_range!.start.toIso8601String().split('T').first},${_range!.end.toIso8601String().split('T').first}');
+      }
+      buffer.writeln();
+      buffer.writeln('Date,Client,Service,Amount,Status');
+      for (final r in requests) {
+        final date = r.createdAt.toIso8601String().split('T').first;
+        final client = (r.customerName ?? '').replaceAll(',', ' ');
+        final service = (r.serviceName ?? '').replaceAll(',', ' ');
+        final amount = (r.servicePrice ?? 0).toStringAsFixed(2);
+        final status = r.statusText.replaceAll(',', ' ');
+        buffer.writeln([date, client, service, amount, status].join(','));
+      }
+      final csv = buffer.toString();
+      await Clipboard.setData(ClipboardData(text: csv));
+      final fileName = 'garage-detailed-${DateTime.now().millisecondsSinceEpoch}.csv';
+      final result = await CsvDownloadUtil.downloadCsv(fileName, csv);
+      if (!mounted) return;
+      if (result.triggeredBrowserDownload) {
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Detailed CSV downloaded & copied')));
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Detailed CSV saved & copied: ${result.filePath ?? ''}')));
+      }
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Detailed export failed: $e')));
+    }
   }
 
   Future<void> _exportCsv(dynamic report) async {
@@ -219,6 +288,96 @@ class _GarageReportScreenState extends State<GarageReportScreen> {
   }
 }
 
+class _DetailedRequestsSection extends StatelessWidget {
+  final List<ServiceRequest> requests;
+  final bool loading;
+  const _DetailedRequestsSection({required this.requests, required this.loading});
+
+  @override
+  Widget build(BuildContext context) {
+    if (loading) {
+      return const Center(child: CircularProgressIndicator());
+    }
+    return Card(
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      elevation: 2,
+      child: Padding(
+        padding: const EdgeInsets.all(12),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                const Icon(Icons.table_chart, size: 18),
+                const SizedBox(width: 6),
+                Text('Detailed Requests', style: Theme.of(context).textTheme.titleMedium),
+                const Spacer(),
+                Text('${requests.length} items', style: const TextStyle(fontSize: 12, color: Colors.grey)),
+              ],
+            ),
+            const SizedBox(height: 12),
+            if (requests.isEmpty)
+              const Text('No requests found for this period', style: TextStyle(fontSize: 13, fontStyle: FontStyle.italic))
+            else
+              SingleChildScrollView(
+                scrollDirection: Axis.horizontal,
+                child: DataTable(
+                  headingRowHeight: 40,
+                  dataRowMinHeight: 40,
+                  columns: const [
+                    DataColumn(label: Text('Date')),
+                    DataColumn(label: Text('Client')),
+                    DataColumn(label: Text('Service')),
+                    DataColumn(label: Text('Amount')),
+                    DataColumn(label: Text('Status')),
+                  ],
+                  rows: requests.map((r) {
+                    final date = '${r.createdAt.year}-${r.createdAt.month.toString().padLeft(2,'0')}-${r.createdAt.day.toString().padLeft(2,'0')}';
+                    final amount = (r.servicePrice ?? 0).toStringAsFixed(2);
+                    return DataRow(cells: [
+                      DataCell(Text(date)),
+                      DataCell(Text(r.customerName ?? '')),
+                      DataCell(Text(r.serviceName ?? '')),
+                      DataCell(Text(amount)),
+                      DataCell(_StatusChip(status: r.statusText)),
+                    ]);
+                  }).toList(),
+                ),
+              ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _StatusChip extends StatelessWidget {
+  final String status;
+  const _StatusChip({required this.status});
+  Color _color(String s) {
+    switch (s.toLowerCase()) {
+      case 'pending': return AppColors.pending;
+      case 'accepted': return AppColors.accepted;
+      case 'in progress': return AppColors.inProgress;
+      case 'completed': return AppColors.completed;
+      case 'rejected': return AppColors.rejected;
+      case 'cancelled': return AppColors.cancelled;
+      default: return Colors.blueGrey;
+    }
+  }
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      decoration: BoxDecoration(
+        color: _color(status).withOpacity(.15),
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Text(status, style: TextStyle(fontSize: 11, color: _color(status), fontWeight: FontWeight.w600)),
+    );
+  }
+}
+
 class _SummaryHeader extends StatelessWidget {
   final dynamic report; // DailyReportResponse
   const _SummaryHeader({required this.report});
@@ -281,12 +440,12 @@ class _StatusStackedBar extends StatelessWidget {
     'PENDING','ACCEPTED','IN_PROGRESS','COMPLETED','REJECTED','CANCELLED'
   ];
   static const _colors = {
-    'PENDING': Colors.grey,
-    'ACCEPTED': Colors.blue,
-    'IN_PROGRESS': Colors.orange,
-    'COMPLETED': Colors.green,
-    'REJECTED': Colors.red,
-    'CANCELLED': Colors.black54,
+    'PENDING': AppColors.pending,
+    'ACCEPTED': AppColors.accepted,
+    'IN_PROGRESS': AppColors.inProgress,
+    'COMPLETED': AppColors.completed,
+    'REJECTED': AppColors.rejected,
+    'CANCELLED': AppColors.cancelled,
   };
 
   @override
@@ -433,7 +592,7 @@ class _EtaLineChart extends StatelessWidget {
                         ],
                         isCurved: true,
                         barWidth: 3,
-                        color: Colors.deepPurple,
+                        color: AppColors.chartLine,
                         dotData: const FlDotData(show: true),
                       )
                     ],

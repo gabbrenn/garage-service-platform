@@ -5,6 +5,7 @@ import '../providers/notification_provider.dart';
 import '../models/notification.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../services/api_service.dart';
+import '../theme/app_colors.dart';
 
 class NotificationsScreen extends StatefulWidget {
   const NotificationsScreen({super.key});
@@ -192,12 +193,12 @@ class _NotificationTile extends StatelessWidget {
       },
       leading: Icon(
         notification.read ? Icons.notifications_none : Icons.notifications_active,
-        color: notification.read ? Colors.grey : Colors.blue,
+  color: notification.read ? Colors.grey : AppColors.navy,
       ),
       title: Text(notification.title, style: TextStyle(fontWeight: notification.read ? FontWeight.normal : FontWeight.bold)),
       subtitle: Text(notification.message),
       trailing: Text(_formatTime(notification.createdAt), style: const TextStyle(fontSize: 12)),
-      tileColor: notification.read ? null : Colors.blue.withOpacity(0.05),
+  tileColor: notification.read ? null : AppColors.navy.withOpacity(0.05),
     );
   }
 

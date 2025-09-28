@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../theme/app_colors.dart';
 import '../services/api_service.dart';
 import 'package:provider/provider.dart';
 import '../providers/notification_provider.dart';
@@ -37,7 +38,7 @@ class _SplashScreenState extends State<SplashScreen> {
   Widget build(BuildContext context) {
     final loc = AppLocalizations.of(context);
     return Scaffold(
-      backgroundColor: Colors.blue,
+      backgroundColor: AppColors.navy,
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,

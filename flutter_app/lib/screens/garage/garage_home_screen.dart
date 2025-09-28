@@ -7,6 +7,8 @@ import '../../providers/service_request_provider.dart';
 import '../../providers/notification_provider.dart';
 import '../../widgets/language_picker_sheet.dart';
 import '../../l10n/gen/app_localizations.dart';
+import '../../theme/app_colors.dart';
+import '../../widgets/theme_toggle_button.dart';
 
 class GarageHomeScreen extends StatefulWidget {
   const GarageHomeScreen({super.key});
@@ -47,9 +49,10 @@ class _GarageHomeScreenState extends State<GarageHomeScreen> {
     return Scaffold(
       appBar: AppBar(
         title: Text(loc.garageDashboard),
-        backgroundColor: Colors.blue,
+        backgroundColor: AppColors.navy,
         foregroundColor: Colors.white,
         actions: [
+          const ThemeToggleButton(),
           Consumer<NotificationProvider>(
             builder: (_, notif, __) => IconButton(
               icon: Stack(children:[
@@ -71,7 +74,9 @@ class _GarageHomeScreenState extends State<GarageHomeScreen> {
           IconButton(icon: const Icon(Icons.refresh), onPressed: _loadData),
           PopupMenuButton<String>(
             onSelected: (value) async {
-              if (value == 'logout') {
+              if (value == 'settings') {
+                Navigator.pushNamed(context, '/settings');
+              } else if (value == 'logout') {
                 final ok = await showDialog<bool>(
                   context: context,
                   builder: (ctx) => AlertDialog(
@@ -92,6 +97,10 @@ class _GarageHomeScreenState extends State<GarageHomeScreen> {
             },
             itemBuilder: (context) => [
               PopupMenuItem(
+                value: 'settings',
+                child: Row(children:[Icon(Icons.settings, color: Colors.grey[600]), const SizedBox(width:8), Text(Localizations.localeOf(context).languageCode=='fr' ? 'Paramètres' : 'Settings')])
+              ),
+              PopupMenuItem(
                 value: 'logout',
                 child: Row(children:[Icon(Icons.logout, color: Colors.grey[600]), const SizedBox(width:8), Text(loc.logout)])
               ),
@@ -104,7 +113,7 @@ class _GarageHomeScreenState extends State<GarageHomeScreen> {
           : garageProvider.myGarage == null ? _buildNoGarageView() : _buildGarageView(),
       floatingActionButton: garageProvider.myGarage != null ? FloatingActionButton(
         onPressed: () { Navigator.pushNamed(context, '/add-service'); },
-        backgroundColor: Colors.blue,
+        backgroundColor: AppColors.darkOrange,
         child: const Icon(Icons.add, color: Colors.white),
       ) : null,
     );
@@ -165,7 +174,7 @@ class _GarageHomeScreenState extends State<GarageHomeScreen> {
                 children: [
                   Row(
                     children: [
-                      Icon(Icons.store, color: Colors.blue, size: 24),
+                      Icon(Icons.store, color: AppColors.navy, size: 24),
                       SizedBox(width: 8),
                       Expanded(
                         child: Text(
@@ -225,7 +234,7 @@ class _GarageHomeScreenState extends State<GarageHomeScreen> {
                   loc.services,
                   garageProvider.myServices.length.toString(),
                   Icons.build,
-                  Colors.blue,
+                  AppColors.navy,
                 ),
               ),
               SizedBox(width: 12),
@@ -234,7 +243,7 @@ class _GarageHomeScreenState extends State<GarageHomeScreen> {
                   loc.requests,
                   serviceRequestProvider.garageRequests.length.toString(),
                   Icons.inbox,
-                  Colors.orange,
+                  AppColors.darkOrange,
                 ),
               ),
             ],
@@ -252,7 +261,7 @@ class _GarageHomeScreenState extends State<GarageHomeScreen> {
                   icon: const Icon(Icons.design_services, color: Colors.white),
                   label: Text(loc.manageServices, style: const TextStyle(color: Colors.white)),
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.blue,
+                    backgroundColor: AppColors.navy,
                     padding: const EdgeInsets.symmetric(vertical:12),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12),
@@ -269,7 +278,7 @@ class _GarageHomeScreenState extends State<GarageHomeScreen> {
                   icon: const Icon(Icons.inbox, color: Colors.white),
                   label: Text(loc.viewRequests, style: const TextStyle(color: Colors.white)),
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.orange,
+                    backgroundColor: AppColors.darkOrange,
                     padding: const EdgeInsets.symmetric(vertical:12),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12),
@@ -286,7 +295,7 @@ class _GarageHomeScreenState extends State<GarageHomeScreen> {
                   icon: const Icon(Icons.add, color: Colors.white),
                   label: Text(loc.addService, style: const TextStyle(color: Colors.white)),
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.indigo,
+                    backgroundColor: AppColors.navy,
                     padding: const EdgeInsets.symmetric(vertical:12),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12),
@@ -307,7 +316,7 @@ class _GarageHomeScreenState extends State<GarageHomeScreen> {
                   icon: const Icon(Icons.store_mall_directory, color: Colors.white),
                   label: Text(loc.editProfile, style: const TextStyle(color: Colors.white)),
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.teal,
+                    backgroundColor: AppColors.navy,
                     padding: const EdgeInsets.symmetric(vertical:12),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12),
@@ -324,7 +333,7 @@ class _GarageHomeScreenState extends State<GarageHomeScreen> {
                   icon: const Icon(Icons.bar_chart, color: Colors.white),
                   label: Text(loc.viewReport, style: const TextStyle(color: Colors.white)),
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.deepPurple,
+                    backgroundColor: AppColors.darkOrange,
                     padding: const EdgeInsets.symmetric(vertical:12),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12),
@@ -377,8 +386,8 @@ class _GarageHomeScreenState extends State<GarageHomeScreen> {
                             margin: const EdgeInsets.only(bottom: 8),
                             child: ListTile(
                               leading: CircleAvatar(
-                                backgroundColor: Colors.blue[100],
-                                child: const Icon(Icons.person, color: Colors.blue),
+                                backgroundColor: AppColors.navy.withOpacity(0.1),
+                                child: const Icon(Icons.person, color: AppColors.navy),
                               ),
                               title: Text(request.service.name),
                               subtitle: Text(
@@ -445,13 +454,15 @@ class _GarageHomeScreenState extends State<GarageHomeScreen> {
   Color _getStatusColor(RequestStatus status) {
     switch (status) {
       case RequestStatus.PENDING:
-        return Colors.orange;
+        return AppColors.pending;
       case RequestStatus.ACCEPTED:
-        return Colors.green;
+        return AppColors.accepted;
+      case RequestStatus.IN_PROGRESS:
+        return AppColors.inProgress;
       case RequestStatus.REJECTED:
-        return Colors.red;
+        return AppColors.rejected;
       default:
-        return Colors.grey;
+        return AppColors.cancelled;
     }
   }
 
@@ -461,9 +472,9 @@ class _GarageHomeScreenState extends State<GarageHomeScreen> {
       case RequestStatus.PENDING: return loc.statusPending;
       case RequestStatus.ACCEPTED: return loc.statusAccepted;
       case RequestStatus.REJECTED: return loc.statusRejected;
-      case RequestStatus.IN_PROGRESS: return loc.statusPending; // fallback until a dedicated key is added
-      case RequestStatus.COMPLETED: return loc.statusAccepted; // temporary mapping
-      case RequestStatus.CANCELLED: return loc.statusRejected; // temporary mapping
+      case RequestStatus.IN_PROGRESS: return loc.statusInProgress;
+      case RequestStatus.COMPLETED: return loc.statusAccepted; // consider adding dedicated completed label later
+      case RequestStatus.CANCELLED: return loc.statusRejected; // consider adding dedicated cancelled label
     }
   }
   }

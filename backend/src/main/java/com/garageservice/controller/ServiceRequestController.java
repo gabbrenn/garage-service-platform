@@ -24,6 +24,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import com.garageservice.service.EmailService;
 
 @CrossOrigin(origins = "*", maxAge = 3600)
 @RestController
@@ -45,6 +46,8 @@ public class ServiceRequestController {
     private NotificationService notificationService;
     @Autowired
     private SimpMessagingTemplate messagingTemplate;
+    @Autowired
+    private EmailService emailService;
 
     @PostMapping
     @PreAuthorize("hasRole('CUSTOMER')")
@@ -82,6 +85,16 @@ public class ServiceRequestController {
     User garageOwner = garage.get().getUser();
     var createdNotif = notificationService.create(garageOwner, "New Service Request", "A new request #"+savedRequest.getId()+" has been created by "+customer.getFirstName());
     messagingTemplate.convertAndSend("/topic/notifications."+garageOwner.getId(), java.util.Map.of("type","CREATED","id", createdNotif.getId()));
+    // Send email to garage owner (if mail is enabled)
+    try {
+        String subject = "New request #" + savedRequest.getId() + " from " + customer.getFirstName();
+        String body = "Hello " + garageOwner.getFirstName() + ",\n\n" +
+                "You have a new service request (ID " + savedRequest.getId() + ") for \"" + savedRequest.getService().getName() + "\"." +
+                "\nCustomer: " + customer.getFirstName() + " " + customer.getLastName() +
+                "\nDescription: " + (savedRequest.getDescription() == null ? "(none)" : savedRequest.getDescription()) +
+                "\n\nPlease log in to review and respond.";
+        emailService.send(garageOwner.getEmail(), subject, body);
+    } catch (Exception ignore) {}
         ServiceRequestResponseDto dto = new ServiceRequestResponseDto(
             savedRequest.getId(),
             savedRequest.getCustomer().getEmail(),
@@ -206,6 +219,18 @@ public class ServiceRequestController {
     // Notify customer
     var createdNotif = notificationService.create(updatedRequest.getCustomer(), "Request Updated", "Your request #"+updatedRequest.getId()+" status is now "+updatedRequest.getStatus());
     messagingTemplate.convertAndSend("/topic/notifications."+updatedRequest.getCustomer().getId(), java.util.Map.of("type","CREATED","id", createdNotif.getId()));
+    // Send email to customer about the update
+    try {
+        User cust = updatedRequest.getCustomer();
+        String subject = "Your request #" + updatedRequest.getId() + " was updated";
+        String body = "Hello " + cust.getFirstName() + ",\n\n" +
+                "Your service request (ID " + updatedRequest.getId() + ") has been updated." +
+                "\nStatus: " + (updatedRequest.getStatus() == null ? "PENDING" : updatedRequest.getStatus()) +
+                (updatedRequest.getGarageResponse() != null ? ("\nMessage from garage: " + updatedRequest.getGarageResponse()) : "") +
+                (updatedRequest.getEstimatedArrivalMinutes() != null ? ("\nETA: " + updatedRequest.getEstimatedArrivalMinutes() + " minutes") : "") +
+                "\n\nThank you.";
+        emailService.send(cust.getEmail(), subject, body);
+    } catch (Exception ignore) {}
         ServiceRequestResponseDto dto = new ServiceRequestResponseDto(
             updatedRequest.getId(),
             updatedRequest.getCustomer().getEmail(),

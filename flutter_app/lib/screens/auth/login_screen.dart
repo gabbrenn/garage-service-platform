@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import '../../providers/auth_provider.dart';
 import '../../models/user.dart';
 import '../../l10n/gen/app_localizations.dart';
+import '../../theme/app_colors.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -56,7 +57,7 @@ class _LoginScreenState extends State<LoginScreen> {
   Widget build(BuildContext context) {
     final loc = AppLocalizations.of(context);
     return Scaffold(
-      backgroundColor: Colors.grey[100],
+      backgroundColor: AppColors.background.withOpacity(0.98),
       body: SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.all(24),
@@ -64,14 +65,14 @@ class _LoginScreenState extends State<LoginScreen> {
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               const SizedBox(height: 60),
-              const Icon(Icons.build, size: 80, color: Colors.blue),
+              const Icon(Icons.build, size: 80, color: AppColors.navy),
               const SizedBox(height: 20),
               Text(
                 loc.welcomeBack,
                 style: TextStyle(
                   fontSize: 28,
                   fontWeight: FontWeight.bold,
-                  color: Colors.grey[800],
+                  color: AppColors.textPrimary,
                 ),
                 textAlign: TextAlign.center,
               ),
@@ -80,7 +81,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 loc.signInSubtitle,
                 style: TextStyle(
                   fontSize: 16,
-                  color: Colors.grey[600],
+                  color: AppColors.textSecondary,
                 ),
                 textAlign: TextAlign.center,
               ),
@@ -99,7 +100,7 @@ class _LoginScreenState extends State<LoginScreen> {
                           borderRadius: BorderRadius.circular(12),
                         ),
                         filled: true,
-                        fillColor: Colors.white,
+                        fillColor: AppColors.card,
                       ),
                       validator: (value) {
                         if (value == null || value.isEmpty) return loc.emailRequired;
@@ -126,7 +127,7 @@ class _LoginScreenState extends State<LoginScreen> {
                           borderRadius: BorderRadius.circular(12),
                         ),
                         filled: true,
-                        fillColor: Colors.white,
+                        fillColor: AppColors.card,
                       ),
                       validator: (value) { if (value == null || value.isEmpty) return loc.passwordRequired; return null; },
                     ),
@@ -139,7 +140,7 @@ class _LoginScreenState extends State<LoginScreen> {
                           child: ElevatedButton(
                             onPressed: authProvider.isLoading ? null : _login,
                             style: ElevatedButton.styleFrom(
-                              backgroundColor: Colors.blue,
+                              backgroundColor: AppColors.darkOrange,
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(12),
                               ),
@@ -176,7 +177,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     child: Text(
                       loc.signUp,
                       style: const TextStyle(
-                        color: Colors.blue,
+                        color: AppColors.darkOrange,
                         fontWeight: FontWeight.bold,
                       ),
                     ),

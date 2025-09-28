@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../services/api_service.dart';
 import '../../l10n/gen/app_localizations.dart';
+import '../../theme/app_colors.dart';
 
 class ForgotPasswordScreen extends StatefulWidget {
   const ForgotPasswordScreen({super.key});
@@ -47,19 +48,19 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
   Widget build(BuildContext context) {
     final loc = AppLocalizations.of(context);
     return Scaffold(
-      appBar: AppBar(title: Text(loc.forgotPasswordTitle)),
+      appBar: AppBar(title: Text(loc.forgotPasswordTitle), backgroundColor: AppColors.navy, foregroundColor: Colors.white),
       body: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            Text(loc.forgotPasswordSubtitle),
+            Text(loc.forgotPasswordSubtitle, style: const TextStyle(color: AppColors.textPrimary)),
             const SizedBox(height: 16),
             Form(
               key: _formKey,
               child: TextFormField(
                 controller: _emailController,
-                decoration: InputDecoration(labelText: loc.loginEmail, border: const OutlineInputBorder()),
+                decoration: InputDecoration(labelText: loc.loginEmail, border: const OutlineInputBorder(), filled: true, fillColor: AppColors.card),
                 keyboardType: TextInputType.emailAddress,
                 validator: (v) {
                   if (v == null || v.isEmpty) return loc.emailRequired;
@@ -73,14 +74,15 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
               height: 48,
               child: ElevatedButton(
                 onPressed: _submitting ? null : _submit,
+                style: ElevatedButton.styleFrom(backgroundColor: AppColors.darkOrange, foregroundColor: Colors.white),
                 child: _submitting
-                    ? const CircularProgressIndicator()
+                    ? const CircularProgressIndicator(color: Colors.white)
                     : Text(loc.sendResetLink),
               ),
             ),
             if (_resultToken != null) ...[
               const SizedBox(height: 12),
-              Text('${loc.devResetToken}: $_resultToken', style: const TextStyle(fontSize: 12, color: Colors.grey)),
+              Text('${loc.devResetToken}: $_resultToken', style: const TextStyle(fontSize: 12, color: AppColors.textSecondary)),
               TextButton(
                 onPressed: () {
                   Navigator.pushNamed(context, '/reset-password', arguments: _resultToken);

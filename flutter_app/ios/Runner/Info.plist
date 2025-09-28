@@ -45,8 +45,8 @@
 	<true/>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
-	<!-- Google Maps API Key -->
+	<!-- Google Maps API Key: provided via xcconfig (GMS_API_KEY). Do not hardcode in source. -->
 	<key>GMSApiKey</key>
-	<string>AIzaSyBSMC1p4tjP3YW_O8nZn9qtw-aHrFu7OUc</string>
+	<string>$(GMS_API_KEY)</string>
 </dict>
 </plist>

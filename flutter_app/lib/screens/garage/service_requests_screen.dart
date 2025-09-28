@@ -9,6 +9,7 @@ import '../../l10n/gen/app_localizations.dart';
 import '../../services/api_service.dart';
 import '../../utils/polyline_decode.dart';
 import 'package:url_launcher/url_launcher.dart';
+import '../../theme/app_colors.dart';
 
 class ServiceRequestsScreen extends StatefulWidget {
   const ServiceRequestsScreen({super.key});
@@ -134,8 +135,8 @@ class _ServiceRequestsScreenState extends State<ServiceRequestsScreen> {
     return Scaffold(
       appBar: AppBar(
         title: Text(loc.serviceRequestsTitle),
-        backgroundColor: Colors.blue,
-        foregroundColor: Colors.white,
+  backgroundColor: AppColors.navy,
+  foregroundColor: Colors.white,
         actions: [
           IconButton(
             icon: Icon(Icons.refresh),
@@ -196,7 +197,7 @@ class _ServiceRequestsScreenState extends State<ServiceRequestsScreen> {
 
     switch (request.status) {
       case RequestStatus.PENDING:
-        statusColor = Colors.orange;
+  statusColor = AppColors.inProgress; // pending mapped to accent
         statusIcon = Icons.hourglass_empty;
         break;
       case RequestStatus.ACCEPTED:
@@ -208,7 +209,7 @@ class _ServiceRequestsScreenState extends State<ServiceRequestsScreen> {
         statusIcon = Icons.cancel;
         break;
       case RequestStatus.IN_PROGRESS:
-        statusColor = Colors.blue;
+  statusColor = AppColors.accepted;
         statusIcon = Icons.build;
         break;
       case RequestStatus.COMPLETED:
@@ -232,9 +233,9 @@ class _ServiceRequestsScreenState extends State<ServiceRequestsScreen> {
           children: [
             Row(
               children: [
-                CircleAvatar(
-                  backgroundColor: Colors.blue[100],
-                  child: Icon(Icons.person, color: Colors.blue),
+                  CircleAvatar(
+                  backgroundColor: AppColors.navy.withOpacity(0.10),
+                  child: const Icon(Icons.person, color: AppColors.navy),
                 ),
                 SizedBox(width: 12),
                 Expanded(
@@ -302,7 +303,7 @@ class _ServiceRequestsScreenState extends State<ServiceRequestsScreen> {
                 children: [
                   Row(
                     children: [
-                      Icon(Icons.build, color: Colors.blue, size: 16),
+                      const Icon(Icons.build, color: AppColors.navy, size: 16),
                       SizedBox(width: 4),
                       Text(
                         'Service: ${request.service.name}',
@@ -361,33 +362,33 @@ class _ServiceRequestsScreenState extends State<ServiceRequestsScreen> {
             
             if (request.garageResponse != null) ...[
               SizedBox(height: 12),
-              Container(
+                  Container(
                 padding: EdgeInsets.all(12),
                 decoration: BoxDecoration(
-                  color: Colors.blue[50],
+                  color: AppColors.navy.withOpacity(0.05),
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
+                    const Text(
                       'Your Response:',
                       style: TextStyle(
                         fontWeight: FontWeight.bold,
-                        color: Colors.blue[800],
+                        color: AppColors.navy,
                       ),
                     ),
                     SizedBox(height: 4),
                     Text(
                       request.garageResponse!,
-                      style: TextStyle(color: Colors.blue[700]),
+                      style: const TextStyle(color: AppColors.navy),
                     ),
                     if (request.estimatedArrivalMinutes != null) ...[
                       SizedBox(height: 4),
                       Text(
                         'ETA: ${request.formattedEstimatedArrival}',
-                        style: TextStyle(
-                          color: Colors.blue[700],
+                        style: const TextStyle(
+                          color: AppColors.navy,
                           fontWeight: FontWeight.bold,
                         ),
                       ),
@@ -450,7 +451,7 @@ class _ServiceRequestsScreenState extends State<ServiceRequestsScreen> {
                       icon: Icon(Icons.build, color: Colors.white),
                       label: Text('Start Work', style: TextStyle(color: Colors.white)),
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.blue,
+                        backgroundColor: AppColors.accepted,
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(8),
                         ),
@@ -648,7 +649,7 @@ class _RequestMapState extends State<_RequestMap> {
             Polyline(
               polylineId: const PolylineId('route'),
               points: pts,
-              color: Colors.blue,
+              color: AppColors.navy,
               width: 5,
             )
           };
@@ -662,7 +663,7 @@ class _RequestMapState extends State<_RequestMap> {
             Polyline(
               polylineId: const PolylineId('route'),
               points: [widget.garagePos, widget.customerPos],
-              color: Colors.blue,
+              color: AppColors.navy,
               width: 4,
               patterns: [PatternItem.dash(20), PatternItem.gap(10)],
             )
@@ -680,7 +681,8 @@ class _RequestMapState extends State<_RequestMap> {
     };
     return Stack(
       children: [
-        GoogleMap(
+        RepaintBoundary(
+          child: GoogleMap(
           initialCameraPosition: CameraPosition(target: widget.garagePos, zoom: 12),
           markers: markers,
           polylines: _polylines,
@@ -694,7 +696,7 @@ class _RequestMapState extends State<_RequestMap> {
           compassEnabled: true,
           mapType: _mapType,
           trafficEnabled: _showTraffic,
-        ),
+        )),
         Positioned(
           right: 12,
           top: 12,
@@ -737,7 +739,7 @@ class _RequestMapState extends State<_RequestMap> {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Row(children:[
-                      const Icon(Icons.directions_car, color: Colors.blue), const SizedBox(width: 8),
+                      const Icon(Icons.directions_car, color: AppColors.navy), const SizedBox(width: 8),
                       if (_lastRouteKm != null) Text('${_lastRouteKm!.toStringAsFixed(1)} km'),
                       if (_lastRouteMinutes != null) ...[
                         const SizedBox(width: 12),

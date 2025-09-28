@@ -78,7 +78,13 @@ class _MapLocationPickerState extends State<MapLocationPicker> {
       height: 250,
       child: Stack(
         children: [
-          GoogleMap(
+          // Clip and isolate painting to reduce SurfaceTexture buffer pressure
+          ClipRRect(
+            borderRadius: BorderRadius.circular(8),
+            child: RepaintBoundary(
+              child: GoogleMap(
+            // Use lite mode for a simpler, more stable rendering in pickers
+            liteModeEnabled: true,
             initialCameraPosition: CameraPosition(target: center, zoom: 14),
             onMapCreated: (c) {
               _controller = c;
@@ -99,6 +105,8 @@ class _MapLocationPickerState extends State<MapLocationPicker> {
             myLocationButtonEnabled: false,
             zoomControlsEnabled: true,
             myLocationEnabled: false,
+              ),
+            ),
           ),
           if (_loadingLocation)
             const Positioned(

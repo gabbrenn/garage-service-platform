@@ -1,1 +1,3 @@
 #include "Generated.xcconfig"
+// Optionally include Maps secrets (create ios/Flutter/MapsSecrets.xcconfig locally; not committed)
+#include? "MapsSecrets.xcconfig"

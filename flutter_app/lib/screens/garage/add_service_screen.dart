@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../providers/garage_provider.dart';
 import '../../l10n/gen/app_localizations.dart';
+import '../../theme/app_colors.dart';
 
 class AddServiceScreen extends StatefulWidget {
   const AddServiceScreen({super.key});
@@ -61,9 +62,10 @@ class _AddServiceScreenState extends State<AddServiceScreen> {
   Widget build(BuildContext context) {
     final loc = AppLocalizations.of(context);
     return Scaffold(
+      backgroundColor: AppColors.background,
       appBar: AppBar(
         title: Text(loc.addServiceTitle),
-        backgroundColor: Colors.blue,
+        backgroundColor: AppColors.navy,
         foregroundColor: Colors.white,
       ),
       body: SingleChildScrollView(
@@ -75,16 +77,17 @@ class _AddServiceScreenState extends State<AddServiceScreen> {
             children: [
               Text(
                 loc.addNewServiceHeading,
-                style: TextStyle(
+                style: const TextStyle(
                   fontSize: 24,
                   fontWeight: FontWeight.bold,
+                  color: AppColors.textPrimary,
                 ),
               ),
               SizedBox(height: 8),
               Text(
                 loc.addServiceDescription,
-                style: TextStyle(
-                  color: Colors.grey[600],
+                style: const TextStyle(
+                  color: AppColors.textSecondary,
                   fontSize: 16,
                 ),
               ),
@@ -99,6 +102,8 @@ class _AddServiceScreenState extends State<AddServiceScreen> {
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
                   ),
+                  filled: true,
+                  fillColor: AppColors.adaptiveCard(Theme.of(context).brightness),
                 ),
                 validator: (value) {
                   if (value == null || value.trim().isEmpty) {
@@ -118,6 +123,8 @@ class _AddServiceScreenState extends State<AddServiceScreen> {
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
                   ),
+                  filled: true,
+                  fillColor: AppColors.adaptiveCard(Theme.of(context).brightness),
                 ),
                 maxLines: 3,
               ),
@@ -133,6 +140,8 @@ class _AddServiceScreenState extends State<AddServiceScreen> {
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
                   ),
+                  filled: true,
+                  fillColor: AppColors.adaptiveCard(Theme.of(context).brightness),
                 ),
                 validator: (value) {
                   if (value == null || value.trim().isEmpty) {
@@ -158,6 +167,8 @@ class _AddServiceScreenState extends State<AddServiceScreen> {
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
                   ),
+                  filled: true,
+                  fillColor: AppColors.adaptiveCard(Theme.of(context).brightness),
                 ),
                 validator: (value) {
                   if (value != null && value.trim().isNotEmpty) {
@@ -174,22 +185,22 @@ class _AddServiceScreenState extends State<AddServiceScreen> {
               Container(
                 padding: EdgeInsets.all(16),
                 decoration: BoxDecoration(
-                  color: Colors.blue[50],
+                  color: AppColors.navy.withOpacity(0.05),
                   borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: Colors.blue[200]!),
+                  border: Border.all(color: AppColors.navy.withOpacity(0.15)),
                 ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Row(
                       children: [
-                        Icon(Icons.info, color: Colors.blue),
+                        Icon(Icons.info, color: AppColors.darkOrange),
                         SizedBox(width: 8),
                         Text(
                           loc.serviceTipsTitle,
                           style: TextStyle(
                             fontWeight: FontWeight.bold,
-                            color: Colors.blue[800],
+                            color: AppColors.navy,
                           ),
                         ),
                       ],
@@ -197,7 +208,7 @@ class _AddServiceScreenState extends State<AddServiceScreen> {
                     SizedBox(height: 8),
                     Text(
                       loc.serviceTipsBullets,
-                      style: TextStyle(color: Colors.blue[700]),
+                      style: TextStyle(color: AppColors.navy),
                     ),
                   ],
                 ),
@@ -212,7 +223,7 @@ class _AddServiceScreenState extends State<AddServiceScreen> {
                     child: ElevatedButton(
                       onPressed: garageProvider.isLoading ? null : _addService,
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.blue,
+                        backgroundColor: AppColors.darkOrange,
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(12),
                         ),

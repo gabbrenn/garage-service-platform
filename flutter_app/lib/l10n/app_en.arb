@@ -297,4 +297,17 @@
   ,"errorServer": "Server error. Please try again later"
   ,"passwordCriteriaShort": "Password needs: {missing}"
   ,"@passwordCriteriaShort": {"placeholders": {"missing": {}}}
+  ,"themeModeSystem": "System"
+  ,"themeModeLight": "Light"
+  ,"themeModeDark": "Dark"
+  ,"themeSwitchToSystem": "Switch to System Theme"
+  ,"themeSwitchToLight": "Switch to Light Theme"
+  ,"themeSwitchToDark": "Switch to Dark Theme"
+  ,"settingsTitle": "Settings"
+  ,"appearanceSection": "Appearance"
+  ,"themeModeLabel": "Theme Mode"
+  ,"themeSystem": "System"
+  ,"themeLight": "Light"
+  ,"themeDark": "Dark"
+  ,"applyButton": "Apply"
 }

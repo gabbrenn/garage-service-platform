@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import '../../models/garage_service.dart';
 import '../../providers/garage_provider.dart';
 import '../../l10n/gen/app_localizations.dart';
+import '../../theme/app_colors.dart';
 
 class ManageServicesScreen extends StatefulWidget {
   const ManageServicesScreen({super.key});
@@ -31,7 +32,7 @@ class _ManageServicesScreenState extends State<ManageServicesScreen> {
     return Scaffold(
       appBar: AppBar(
         title: Text(loc.manageServices),
-        backgroundColor: Colors.blue,
+        backgroundColor: AppColors.navy,
         foregroundColor: Colors.white,
         actions: [
           IconButton(
@@ -42,7 +43,7 @@ class _ManageServicesScreenState extends State<ManageServicesScreen> {
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () => Navigator.pushNamed(context, '/add-service'),
-        backgroundColor: Colors.blue,
+        backgroundColor: AppColors.darkOrange,
         child: const Icon(Icons.add, color: Colors.white),
       ),
       body: garageProvider.isLoading
@@ -89,7 +90,7 @@ class _ManageServicesScreenState extends State<ManageServicesScreen> {
               onPressed: () => Navigator.pushNamed(context, '/add-service'),
               icon: const Icon(Icons.add, color: Colors.white),
               label: Text(loc.addService, style: const TextStyle(color: Colors.white)),
-              style: ElevatedButton.styleFrom(backgroundColor: Colors.blue),
+              style: ElevatedButton.styleFrom(backgroundColor: AppColors.darkOrange),
             ),
           ],
         ),
@@ -118,7 +119,7 @@ class _ManageServicesScreenState extends State<ManageServicesScreen> {
               onPressed: retry,
               icon: const Icon(Icons.refresh, color: Colors.white),
               label: Text(loc.retry, style: const TextStyle(color: Colors.white)),
-              style: ElevatedButton.styleFrom(backgroundColor: Colors.blue),
+              style: ElevatedButton.styleFrom(backgroundColor: AppColors.darkOrange),
             )
           ],
         ),
@@ -134,8 +135,8 @@ class _ManageServicesScreenState extends State<ManageServicesScreen> {
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       child: ListTile(
         leading: CircleAvatar(
-          backgroundColor: Colors.blue[50],
-          child: const Icon(Icons.build, color: Colors.blue),
+          backgroundColor: AppColors.navy.withOpacity(0.10),
+          child: const Icon(Icons.build, color: AppColors.navy),
         ),
         title: Text(service.name, style: const TextStyle(fontWeight: FontWeight.bold)),
         subtitle: Column(

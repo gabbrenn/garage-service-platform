@@ -1,5 +1,32 @@
+### General
+*.log
+.DS_Store
+Thumbs.db
+
+### Node
 node_modules/
+
+### Env & secrets (set via CI/hosting dashboards instead)
 .env
+**/.env
+**/.env.*
+*.local
+*.secret
 backend/.env
 backend/src/main/resources/*firebase-adminsdk*.json
 **/service-account*.json
+
+### IDE / Project files
+.idea/
+.vscode/
+*.iml
+*.ipr
+*.iws
+
+### Java / Maven
+**/target/
+.mvn/wrapper/maven-wrapper.jar
+
+### Flutter / Dart (global catch-all; platform-specific .gitignore exists too)
+**/.dart_tool/
+**/build/

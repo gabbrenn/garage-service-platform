@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import '../../l10n/gen/app_localizations.dart';
 import '../../providers/service_request_provider.dart';
 import '../../models/service_request.dart';
+import '../../theme/app_colors.dart';
 
 class MyRequestsScreen extends StatefulWidget {
   const MyRequestsScreen({super.key});
@@ -30,9 +31,10 @@ class _MyRequestsScreenState extends State<MyRequestsScreen> {
 
     final loc = AppLocalizations.of(context);
     return Scaffold(
+      backgroundColor: AppColors.background,
       appBar: AppBar(
         title: Text(loc.myRequests),
-        backgroundColor: Colors.blue,
+        backgroundColor: AppColors.navy,
         foregroundColor: Colors.white,
         actions: [
           IconButton(
@@ -48,7 +50,7 @@ class _MyRequestsScreenState extends State<MyRequestsScreen> {
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Icon(Icons.error, size: 64, color: Colors.red),
+                      Icon(Icons.error, size: 64, color: AppColors.error),
                       SizedBox(height: 16),
                       Text(loc.errorLoadingRequests),
                       SizedBox(height: 8),
@@ -66,14 +68,14 @@ class _MyRequestsScreenState extends State<MyRequestsScreen> {
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          Icon(Icons.inbox, size: 64, color: Colors.grey),
+                          Icon(Icons.inbox, size: 64, color: AppColors.textSecondary),
                           SizedBox(height: 16),
                           Text(
                             loc.noRequestsYet,
-                            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: AppColors.textPrimary),
                           ),
                           SizedBox(height: 8),
-                          Text(loc.noRequestsYetLong),
+                          Text(loc.noRequestsYetLong, style: TextStyle(color: AppColors.textSecondary)),
                         ],
                       ),
                     )
@@ -94,27 +96,27 @@ class _MyRequestsScreenState extends State<MyRequestsScreen> {
 
     switch (request.status) {
       case RequestStatus.PENDING:
-        statusColor = Colors.orange;
+        statusColor = AppColors.pending;
         statusIcon = Icons.hourglass_empty;
         break;
       case RequestStatus.ACCEPTED:
-        statusColor = Colors.green;
+        statusColor = AppColors.accepted;
         statusIcon = Icons.check_circle;
         break;
       case RequestStatus.REJECTED:
-        statusColor = Colors.red;
+        statusColor = AppColors.rejected;
         statusIcon = Icons.cancel;
         break;
       case RequestStatus.IN_PROGRESS:
-        statusColor = Colors.blue;
+        statusColor = AppColors.inProgress;
         statusIcon = Icons.build;
         break;
       case RequestStatus.COMPLETED:
-        statusColor = Colors.green;
+        statusColor = AppColors.completed;
         statusIcon = Icons.check_circle_outline;
         break;
       case RequestStatus.CANCELLED:
-        statusColor = Colors.grey;
+        statusColor = AppColors.cancelled;
         statusIcon = Icons.cancel_outlined;
         break;
     }
@@ -151,7 +153,7 @@ class _MyRequestsScreenState extends State<MyRequestsScreen> {
                 Text(
                   '${request.createdAt.day}/${request.createdAt.month}/${request.createdAt.year}',
                   style: TextStyle(
-                    color: Colors.grey[600],
+                    color: AppColors.textSecondary,
                     fontSize: 12,
                   ),
                 ),
@@ -163,13 +165,14 @@ class _MyRequestsScreenState extends State<MyRequestsScreen> {
               style: TextStyle(
                 fontSize: 16,
                 fontWeight: FontWeight.bold,
+                color: AppColors.textPrimary,
               ),
             ),
             SizedBox(height: 4),
             Text(
               request.garage?.name ?? request.garageName ?? 'Unknown Garage',
               style: TextStyle(
-                color: Colors.grey[600],
+                color: AppColors.textSecondary,
                 fontSize: 14,
               ),
             ),
@@ -177,7 +180,7 @@ class _MyRequestsScreenState extends State<MyRequestsScreen> {
               SizedBox(height: 8),
               Text(
                 'Description: ${request.description}',
-                style: TextStyle(color: Colors.grey[700]),
+                style: TextStyle(color: AppColors.textSecondary),
               ),
             ],
             if (request.garageResponse != null) ...[
@@ -185,7 +188,7 @@ class _MyRequestsScreenState extends State<MyRequestsScreen> {
               Container(
                 padding: EdgeInsets.all(12),
                 decoration: BoxDecoration(
-                  color: Colors.blue[50],
+                  color: AppColors.navy.withOpacity(0.05),
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: Column(
@@ -195,13 +198,13 @@ class _MyRequestsScreenState extends State<MyRequestsScreen> {
                       'Garage Response:',
                       style: TextStyle(
                         fontWeight: FontWeight.bold,
-                        color: Colors.blue[800],
+                        color: AppColors.navy,
                       ),
                     ),
                     SizedBox(height: 4),
                     Text(
                       request.garageResponse!,
-                      style: TextStyle(color: Colors.blue[700]),
+                      style: TextStyle(color: AppColors.navy),
                     ),
                   ],
                 ),
@@ -211,12 +214,12 @@ class _MyRequestsScreenState extends State<MyRequestsScreen> {
               SizedBox(height: 8),
               Row(
                 children: [
-                  Icon(Icons.access_time, color: Colors.green, size: 16),
+                  Icon(Icons.access_time, color: AppColors.success, size: 16),
                   SizedBox(width: 4),
                   Text(
                     'Estimated arrival: ${request.formattedEstimatedArrival}',
                     style: TextStyle(
-                      color: Colors.green[800],
+                      color: AppColors.success,
                       fontWeight: FontWeight.bold,
                     ),
                   ),
@@ -226,11 +229,11 @@ class _MyRequestsScreenState extends State<MyRequestsScreen> {
             SizedBox(height: 8),
             Row(
               children: [
-                Icon(Icons.attach_money, color: Colors.green, size: 16),
+                Icon(Icons.attach_money, color: AppColors.success, size: 16),
                 Text(
                   request.service.formattedPrice,
                   style: TextStyle(
-                    color: Colors.green[800],
+                    color: AppColors.success,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
@@ -238,7 +241,7 @@ class _MyRequestsScreenState extends State<MyRequestsScreen> {
                 Text(
                   'Updated: ${request.updatedAt.day}/${request.updatedAt.month} ${request.updatedAt.hour}:${request.updatedAt.minute.toString().padLeft(2, '0')}',
                   style: TextStyle(
-                    color: Colors.grey[500],
+                    color: AppColors.textSecondary,
                     fontSize: 12,
                   ),
                 ),

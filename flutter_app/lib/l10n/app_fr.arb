@@ -297,4 +297,17 @@
   ,"errorServer": "Erreur serveur. Réessayez plus tard"
   ,"passwordCriteriaShort": "Manque : {missing}"
   ,"@passwordCriteriaShort": {"placeholders": {"missing": {}}}
+  ,"themeModeSystem": "Système"
+  ,"themeModeLight": "Clair"
+  ,"themeModeDark": "Sombre"
+  ,"themeSwitchToSystem": "Passer au thème système"
+  ,"themeSwitchToLight": "Passer au thème clair"
+  ,"themeSwitchToDark": "Passer au thème sombre"
+  ,"settingsTitle": "Paramètres"
+  ,"appearanceSection": "Apparence"
+  ,"themeModeLabel": "Mode de thème"
+  ,"themeSystem": "Système"
+  ,"themeLight": "Clair"
+  ,"themeDark": "Sombre"
+  ,"applyButton": "Appliquer"
 }

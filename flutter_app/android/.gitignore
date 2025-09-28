@@ -12,3 +12,7 @@ GeneratedPluginRegistrant.java
 key.properties
 **/*.keystore
 **/*.jks
+
+# Google services (Firebase) files should not be committed
+google-services.json
+**/google-services.json

@@ -30,6 +30,7 @@ dependencies:
   firebase_messaging: ^16.0.1
   flutter_local_notifications: ^19.4.2
   url_launcher: ^6.3.0
+  flutter_dotenv: ^5.1.0
 
 
 dev_dependencies:
@@ -43,6 +44,9 @@ dev_dependencies:
 flutter:
   uses-material-design: true
   generate: true
+  assets:
+    # Environment file (not committed in production; sample can be provided)
+    - .env
 
   # Localization configuration
   # ARB files will live in lib/l10n

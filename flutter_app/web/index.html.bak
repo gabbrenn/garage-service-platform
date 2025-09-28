@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html>
 <head>
   <!--
@@ -28,7 +28,7 @@
     Note: The Flutter web plugin reads this meta to load the Maps JS.
     For app's Directions REST calls, Dart code can also read:
       --dart-define=GOOGLE_DIRECTIONS_API_KEY=YOUR_KEY -->
-  <meta name="google_maps_api_key" content="YOUR_GOOGLE_MAPS_API_KEY_HERE"/>
+  <meta name="google_maps_api_key" content="YOUR_GOOGLE_MAPS_API_KEY_HERE">
 
   <!-- iOS meta tags & icons -->
   <meta name="mobile-web-app-capable" content="yes">
@@ -43,8 +43,7 @@
   <link rel="manifest" href="manifest.json">
 </head>
 <body>
-  <!-- google_maps_flutter_web will load the Maps JS script based on the meta above. The real key is injected at runtime by scripts/run-web-with-env.ps1 -->
+  <!-- google_maps_flutter_web will load the Maps JS script based on the meta above. -->
   <script src="flutter_bootstrap.js" async></script>
 </body>
 </html>
-

@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:flutter/services.dart';
+import '../config/app_config.dart';
 
 // Conditional import for web to read index.html script tag key
 import 'maps_api_key_stub.dart'
@@ -11,6 +12,13 @@ class MapsApiKeyProvider {
 
   static Future<String> getKey() async {
     if (_cached != null) return _cached!;
+    // 0) Try explicit env/platform key (dart-define > .env) for quick override without native channel.
+    final envKey = AppConfig.effectiveMapsKey;
+    if (envKey != null && envKey.isNotEmpty) {
+      _cached = envKey;
+      return envKey;
+    }
+
     // 1) Try native (Android/iOS) via method channel
     try {
       final key = await _channel.invokeMethod<String>('getMapsApiKey');

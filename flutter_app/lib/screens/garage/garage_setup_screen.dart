@@ -5,6 +5,7 @@ import 'package:permission_handler/permission_handler.dart';
 import '../../providers/garage_provider.dart';
 import '../../widgets/map_location_picker.dart';
 import '../../l10n/gen/app_localizations.dart';
+import '../../theme/app_colors.dart';
 
 class GarageSetupScreen extends StatefulWidget {
   const GarageSetupScreen({super.key});
@@ -130,9 +131,10 @@ class _GarageSetupScreenState extends State<GarageSetupScreen> {
   Widget build(BuildContext context) {
     final loc = AppLocalizations.of(context);
     return Scaffold(
+      backgroundColor: AppColors.background.withOpacity(0.98),
       appBar: AppBar(
         title: Text(loc.setUpYourGarage),
-        backgroundColor: Colors.blue,
+        backgroundColor: AppColors.navy,
         foregroundColor: Colors.white,
       ),
       body: SingleChildScrollView(
@@ -168,23 +170,24 @@ class _GarageSetupScreenState extends State<GarageSetupScreen> {
                     _currentPosition!.latitude.toStringAsFixed(6),
                     _currentPosition!.longitude.toStringAsFixed(6),
                   ),
-                  style: TextStyle(color: Colors.blue[700], fontWeight: FontWeight.w600)),
+                  style: const TextStyle(color: AppColors.navy, fontWeight: FontWeight.w600)),
               if (_currentPosition == null && !_isLoadingLocation)
-                Text(loc.mapTapToChooseLocation, style: TextStyle(color: Colors.grey[600])),
+                Text(loc.mapTapToChooseLocation, style: const TextStyle(color: AppColors.textSecondary)),
               const SizedBox(height: 16),
               
               Text(
                 loc.createGarageProfileHeading,
-                style: TextStyle(
+                style: const TextStyle(
                   fontSize: 24,
                   fontWeight: FontWeight.bold,
+                  color: AppColors.textPrimary,
                 ),
               ),
               SizedBox(height: 8),
               Text(
                 loc.createGarageProfileIntro,
-                style: TextStyle(
-                  color: Colors.grey[600],
+                style: const TextStyle(
+                  color: AppColors.textSecondary,
                   fontSize: 16,
                 ),
               ),
@@ -199,6 +202,8 @@ class _GarageSetupScreenState extends State<GarageSetupScreen> {
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
                   ),
+                  filled: true,
+                  fillColor: AppColors.adaptiveCard(Theme.of(context).brightness),
                 ),
                 validator: (value) {
                   if (value == null || value.trim().isEmpty) {
@@ -218,6 +223,8 @@ class _GarageSetupScreenState extends State<GarageSetupScreen> {
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
                   ),
+                  filled: true,
+                  fillColor: AppColors.adaptiveCard(Theme.of(context).brightness),
                 ),
                 maxLines: 2,
                 validator: (value) {
@@ -238,6 +245,8 @@ class _GarageSetupScreenState extends State<GarageSetupScreen> {
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
                   ),
+                  filled: true,
+                  fillColor: AppColors.adaptiveCard(Theme.of(context).brightness),
                 ),
                 maxLines: 3,
               ),
@@ -252,6 +261,8 @@ class _GarageSetupScreenState extends State<GarageSetupScreen> {
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
                   ),
+                  filled: true,
+                  fillColor: AppColors.adaptiveCard(Theme.of(context).brightness),
                 ),
               ),
               SizedBox(height: 30),
@@ -264,7 +275,7 @@ class _GarageSetupScreenState extends State<GarageSetupScreen> {
                     child: ElevatedButton(
                       onPressed: garageProvider.isLoading ? null : _createGarage,
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.blue,
+                        backgroundColor: AppColors.darkOrange,
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(12),
                         ),

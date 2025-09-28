@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import '../../providers/auth_provider.dart';
 import '../../models/user.dart';
 import '../../l10n/gen/app_localizations.dart';
+import '../../theme/app_colors.dart';
 
 class RegisterScreen extends StatefulWidget {
   const RegisterScreen({super.key});
@@ -131,10 +132,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
   Widget build(BuildContext context) {
     final loc = AppLocalizations.of(context);
     return Scaffold(
-      backgroundColor: Colors.grey[100],
+      backgroundColor: AppColors.background.withOpacity(0.98),
       appBar: AppBar(
         title: Text(loc.createAccountTitle),
-        backgroundColor: Colors.blue,
+        backgroundColor: AppColors.navy,
         foregroundColor: Colors.white,
       ),
       body: SafeArea(
@@ -150,7 +151,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   style: TextStyle(
                     fontSize: 24,
                     fontWeight: FontWeight.bold,
-                    color: Colors.grey[800],
+                    color: AppColors.textPrimary,
                   ),
                   textAlign: TextAlign.center,
                 ),
@@ -167,7 +168,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                             borderRadius: BorderRadius.circular(12),
                           ),
                           filled: true,
-                          fillColor: Colors.white,
+                          fillColor: AppColors.card,
                         ),
                         validator: (value) {
                           if (value == null || value.isEmpty) {
@@ -188,7 +189,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                             borderRadius: BorderRadius.circular(12),
                           ),
                           filled: true,
-                          fillColor: Colors.white,
+                          fillColor: AppColors.card,
                         ),
                         validator: (value) {
                           if (value == null || value.isEmpty) {
@@ -211,7 +212,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       borderRadius: BorderRadius.circular(12),
                     ),
                     filled: true,
-                    fillColor: Colors.white,
+                    fillColor: AppColors.card,
                   ),
                   validator: (value) {
                     if (value == null || value.isEmpty) {
@@ -234,7 +235,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       borderRadius: BorderRadius.circular(12),
                     ),
                     filled: true,
-                    fillColor: Colors.white,
+                    fillColor: AppColors.card,
                   ),
                   validator: (value) {
                     if (value == null || value.isEmpty) {
@@ -249,7 +250,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   decoration: BoxDecoration(
                     color: Colors.white,
                     borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: Colors.grey[400]!),
+                    border: Border.all(color: AppColors.border),
                   ),
                   child: DropdownButtonHideUnderline(
                     child: DropdownButton<UserType>(
@@ -260,7 +261,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                           value: UserType.CUSTOMER,
                           child: Row(
                             children: [
-                              Icon(Icons.person, color: Colors.grey[600]),
+                              const Icon(Icons.person, color: AppColors.textSecondary),
                               const SizedBox(width: 12),
                               Text(loc.customer),
                             ],
@@ -270,7 +271,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                           value: UserType.GARAGE_OWNER,
                           child: Row(
                             children: [
-                              Icon(Icons.build, color: Colors.grey[600]),
+                              const Icon(Icons.build, color: AppColors.textSecondary),
                               const SizedBox(width: 12),
                               Text(loc.garageOwner),
                             ],
@@ -306,7 +307,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       borderRadius: BorderRadius.circular(12),
                     ),
                     filled: true,
-                    fillColor: Colors.white,
+                    fillColor: AppColors.card,
                   ),
                   validator: _passwordValidator,
                 ),
@@ -341,7 +342,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       borderRadius: BorderRadius.circular(12),
                     ),
                     filled: true,
-                    fillColor: Colors.white,
+                    fillColor: AppColors.card,
                   ),
                   validator: _confirmPasswordValidator,
                 ),
@@ -354,7 +355,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       child: ElevatedButton(
                         onPressed: authProvider.isLoading ? null : _register,
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.blue,
+                          backgroundColor: AppColors.darkOrange,
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(12),
                           ),

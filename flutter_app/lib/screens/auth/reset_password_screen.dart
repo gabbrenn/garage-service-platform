@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../services/api_service.dart';
 import '../../l10n/gen/app_localizations.dart';
+import '../../theme/app_colors.dart';
 
 class ResetPasswordScreen extends StatefulWidget {
   final String? initialToken;
@@ -115,7 +116,7 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
       _tokenController.text = arg;
     }
     return Scaffold(
-      appBar: AppBar(title: Text(loc.resetPasswordTitle)),
+      appBar: AppBar(title: Text(loc.resetPasswordTitle), backgroundColor: AppColors.navy, foregroundColor: Colors.white),
       body: Padding(
         padding: const EdgeInsets.all(16),
         child: Form(
@@ -125,7 +126,7 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
             children: [
               TextFormField(
                 controller: _tokenController,
-                decoration: InputDecoration(labelText: loc.resetTokenLabel, border: const OutlineInputBorder()),
+                decoration: InputDecoration(labelText: loc.resetTokenLabel, border: const OutlineInputBorder(), filled: true, fillColor: AppColors.card),
                 validator: (v) => (v==null || v.isEmpty) ? loc.tokenRequired : null,
               ),
               const SizedBox(height: 12),
@@ -134,7 +135,7 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
                 obscureText: _obscurePwd,
                 decoration: InputDecoration(
                   labelText: loc.newPassword,
-                  border: const OutlineInputBorder(),
+                  border: const OutlineInputBorder(), filled: true, fillColor: AppColors.card,
                   suffixIcon: IconButton(
                     icon: Icon(_obscurePwd ? Icons.visibility : Icons.visibility_off),
                     onPressed: () => setState(()=> _obscurePwd = !_obscurePwd),
@@ -159,7 +160,7 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
                 obscureText: _obscureConfirm,
                 decoration: InputDecoration(
                   labelText: loc.confirmNewPassword,
-                  border: const OutlineInputBorder(),
+                  border: const OutlineInputBorder(), filled: true, fillColor: AppColors.card,
                   suffixIcon: IconButton(
                     icon: Icon(_obscureConfirm ? Icons.visibility : Icons.visibility_off),
                     onPressed: () => setState(()=> _obscureConfirm = !_obscureConfirm),
@@ -172,7 +173,8 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
                 height: 48,
                 child: ElevatedButton(
                   onPressed: _submitting ? null : _submit,
-                  child: _submitting ? const CircularProgressIndicator() : Text(loc.resetPasswordCta),
+                  style: ElevatedButton.styleFrom(backgroundColor: AppColors.darkOrange, foregroundColor: Colors.white),
+                  child: _submitting ? const CircularProgressIndicator(color: Colors.white) : Text(loc.resetPasswordCta),
                 ),
               ),
             ],

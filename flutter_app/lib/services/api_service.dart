@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import '../utils/maps_api_key.dart';
+import '../config/app_config.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import '../models/user.dart';
 import '../models/garage.dart';
@@ -18,12 +19,8 @@ class UnauthorizedException implements Exception {
 }
 
 class ApiService {
-  // Configure via: flutter run --dart-define=API_BASE_URL=http://10.0.2.2:8080/api (Android emulator)
-  // or: flutter run -d windows --dart-define=API_BASE_URL=http://localhost:8080/api
-  static const String baseUrl = String.fromEnvironment(
-    'API_BASE_URL',
-    defaultValue: 'http://localhost:8080/api',
-  );
+  // Base URL resolved dynamically (dart-define > .env > fallback) via AppConfig.
+  static String get baseUrl => AppConfig.apiBaseUrl;
 
   static const FlutterSecureStorage _storage = FlutterSecureStorage();
   static String? _cachedToken;

@@ -6,6 +6,7 @@ import '../../models/garage.dart';
 import '../../models/garage_service.dart';
 import '../../widgets/map_location_picker.dart';
 import '../../l10n/gen/app_localizations.dart';
+import '../../theme/app_colors.dart';
 
 class ServiceRequestScreen extends StatefulWidget {
   const ServiceRequestScreen({super.key});
@@ -56,7 +57,7 @@ class _ServiceRequestScreenState extends State<ServiceRequestScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(loc.failedToGetLocationWithError(e.toString())),
-          backgroundColor: Colors.red,
+          backgroundColor: AppColors.error,
         ),
       );
     }
@@ -73,7 +74,7 @@ class _ServiceRequestScreenState extends State<ServiceRequestScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(loc.locationRequiredSubmitRequest),
-            backgroundColor: Colors.red,
+            backgroundColor: AppColors.error,
           ),
         );
         return;
@@ -95,7 +96,7 @@ class _ServiceRequestScreenState extends State<ServiceRequestScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(loc.serviceRequestSubmittedSuccess),
-            backgroundColor: Colors.green,
+            backgroundColor: AppColors.success,
           ),
         );
         Navigator.pop(context);
@@ -103,7 +104,7 @@ class _ServiceRequestScreenState extends State<ServiceRequestScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(serviceRequestProvider.error ?? loc.serviceRequestSubmitFailed),
-            backgroundColor: Colors.red,
+            backgroundColor: AppColors.error,
           ),
         );
       }
@@ -121,9 +122,10 @@ class _ServiceRequestScreenState extends State<ServiceRequestScreen> {
     }
 
     return Scaffold(
+      backgroundColor: AppColors.background,
       appBar: AppBar(
         title: Text(loc.requestServiceTitle),
-        backgroundColor: Colors.blue,
+        backgroundColor: AppColors.navy,
         foregroundColor: Colors.white,
       ),
       body: SingleChildScrollView(
@@ -159,7 +161,7 @@ class _ServiceRequestScreenState extends State<ServiceRequestScreen> {
                     _currentPosition!.latitude.toStringAsFixed(6),
                     _currentPosition!.longitude.toStringAsFixed(6),
                   ),
-                  style: TextStyle(color: Colors.blue[700], fontWeight: FontWeight.w600),
+                  style: const TextStyle(color: AppColors.navy, fontWeight: FontWeight.w600),
                 )
               else if (_isLoadingLocation)
                 Row(
@@ -170,7 +172,7 @@ class _ServiceRequestScreenState extends State<ServiceRequestScreen> {
                   ],
                 )
               else
-                Text(loc.mapTapToSetLocation, style: TextStyle(color: Colors.grey[600])),
+                Text(loc.mapTapToSetLocation, style: const TextStyle(color: AppColors.textSecondary)),
               const SizedBox(height: 16),
               Card(
                 elevation: 4,
@@ -182,23 +184,24 @@ class _ServiceRequestScreenState extends State<ServiceRequestScreen> {
                     children: [
                       Text(
                         loc.serviceDetailsHeading,
-                        style: TextStyle(
+                        style: const TextStyle(
                           fontSize: 18,
                           fontWeight: FontWeight.bold,
-                          color: Colors.blue[800],
+                          color: AppColors.textPrimary,
                         ),
                       ),
                       SizedBox(height: 12),
                       Row(
                         children: [
-                          Icon(Icons.build, color: Colors.blue),
+                          Icon(Icons.build, color: AppColors.darkOrange),
                           SizedBox(width: 8),
                           Expanded(
                             child: Text(
                               garage!.name,
-                              style: TextStyle(
+                              style: const TextStyle(
                                 fontSize: 16,
                                 fontWeight: FontWeight.bold,
+                                color: AppColors.textPrimary,
                               ),
                             ),
                           ),
@@ -207,12 +210,12 @@ class _ServiceRequestScreenState extends State<ServiceRequestScreen> {
                       SizedBox(height: 8),
                       Row(
                         children: [
-                          Icon(Icons.location_on, color: Colors.grey[600], size: 16),
+                          Icon(Icons.location_on, color: AppColors.textSecondary, size: 16),
                           SizedBox(width: 8),
                           Expanded(
                             child: Text(
                               garage!.address,
-                              style: TextStyle(color: Colors.grey[600]),
+                              style: const TextStyle(color: AppColors.textSecondary),
                             ),
                           ),
                         ],
@@ -232,13 +235,13 @@ class _ServiceRequestScreenState extends State<ServiceRequestScreen> {
                           Container(
                             padding: EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                             decoration: BoxDecoration(
-                              color: Colors.green[100],
+                              color: AppColors.success.withOpacity(0.15),
                               borderRadius: BorderRadius.circular(20),
                             ),
                             child: Text(
                               service!.formattedPrice,
-                              style: TextStyle(
-                                color: Colors.green[800],
+                              style: const TextStyle(
+                                color: AppColors.success,
                                 fontWeight: FontWeight.bold,
                               ),
                             ),
@@ -249,17 +252,17 @@ class _ServiceRequestScreenState extends State<ServiceRequestScreen> {
                         SizedBox(height: 8),
                         Text(
                           service!.description!,
-                          style: TextStyle(color: Colors.grey[600]),
+                          style: const TextStyle(color: AppColors.textSecondary),
                         ),
                       ],
                       SizedBox(height: 8),
                       Row(
                         children: [
-                          Icon(Icons.access_time, color: Colors.grey[600], size: 16),
+                          Icon(Icons.access_time, color: AppColors.textSecondary, size: 16),
                           SizedBox(width: 4),
                           Text(
                             service!.formattedDuration,
-                            style: TextStyle(color: Colors.grey[600]),
+                            style: const TextStyle(color: AppColors.textSecondary),
                           ),
                         ],
                       ),
@@ -278,10 +281,10 @@ class _ServiceRequestScreenState extends State<ServiceRequestScreen> {
                     children: [
                       Text(
                         loc.yourLocationHeading,
-                        style: TextStyle(
+                        style: const TextStyle(
                           fontSize: 18,
                           fontWeight: FontWeight.bold,
-                          color: Colors.blue[800],
+                          color: AppColors.textPrimary,
                         ),
                       ),
                       SizedBox(height: 12),
@@ -301,7 +304,7 @@ class _ServiceRequestScreenState extends State<ServiceRequestScreen> {
                       else if (_currentPosition != null)
                         Row(
                           children: [
-                            Icon(Icons.location_on, color: Colors.green),
+                            Icon(Icons.location_on, color: AppColors.success),
                             SizedBox(width: 8),
                             Expanded(
                               child: Text(
@@ -309,7 +312,7 @@ class _ServiceRequestScreenState extends State<ServiceRequestScreen> {
                                   _currentPosition!.latitude.toStringAsFixed(4),
                                   _currentPosition!.longitude.toStringAsFixed(4),
                                 ),
-                                style: TextStyle(color: Colors.green[800]),
+                                style: const TextStyle(color: AppColors.success),
                               ),
                             ),
                           ],
@@ -317,7 +320,7 @@ class _ServiceRequestScreenState extends State<ServiceRequestScreen> {
                       else
                         Row(
                           children: [
-                            Icon(Icons.location_off, color: Colors.red),
+                            Icon(Icons.location_off, color: AppColors.error),
                             SizedBox(width: 8),
                             Expanded(child: Text(loc.locationNotAvailable)),
                             TextButton(
@@ -354,10 +357,10 @@ class _ServiceRequestScreenState extends State<ServiceRequestScreen> {
                     children: [
                       Text(
                         loc.additionalDetailsHeading,
-                        style: TextStyle(
+                        style: const TextStyle(
                           fontSize: 18,
                           fontWeight: FontWeight.bold,
-                          color: Colors.blue[800],
+                          color: AppColors.textPrimary,
                         ),
                       ),
                       SizedBox(height: 12),
@@ -386,7 +389,7 @@ class _ServiceRequestScreenState extends State<ServiceRequestScreen> {
                     child: ElevatedButton(
                       onPressed: serviceRequestProvider.isLoading ? null : _submitRequest,
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.blue,
+                        backgroundColor: AppColors.darkOrange,
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(12),
                         ),

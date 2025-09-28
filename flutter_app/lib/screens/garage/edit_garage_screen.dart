@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import '../../providers/garage_provider.dart';
 import '../../widgets/map_location_picker.dart';
 import '../../l10n/gen/app_localizations.dart';
+import '../../theme/app_colors.dart';
 
 class EditGarageScreen extends StatefulWidget {
   const EditGarageScreen({super.key});
@@ -57,9 +58,10 @@ class _EditGarageScreenState extends State<EditGarageScreen> {
 
     final loc = AppLocalizations.of(context);
     return Scaffold(
+      backgroundColor: AppColors.background,
       appBar: AppBar(
         title: Text(loc.editGarageTitle),
-        backgroundColor: Colors.blue,
+        backgroundColor: AppColors.navy,
         foregroundColor: Colors.white,
       ),
       body: Form(
@@ -80,31 +82,31 @@ class _EditGarageScreenState extends State<EditGarageScreen> {
             if (_latCtrl.text.isNotEmpty && _lngCtrl.text.isNotEmpty)
               Text(
                 loc.selectedCoordinatesLabel(_latCtrl.text, _lngCtrl.text),
-                style: TextStyle(color: Colors.blue[700], fontWeight: FontWeight.w600),
+                style: const TextStyle(color: AppColors.navy, fontWeight: FontWeight.w600),
               ),
             const SizedBox(height: 12),
             TextFormField(
               controller: _nameCtrl,
-              decoration: InputDecoration(labelText: loc.name, border: const OutlineInputBorder()),
+              decoration: InputDecoration(labelText: loc.name, border: const OutlineInputBorder(), filled: true, fillColor: AppColors.adaptiveCard(Theme.of(context).brightness)),
               validator: (v) => v == null || v.trim().isEmpty ? loc.nameRequired : null,
             ),
             const SizedBox(height: 12),
             TextFormField(
               controller: _addressCtrl,
-              decoration: InputDecoration(labelText: loc.garageAddressLabel, border: const OutlineInputBorder()),
+              decoration: InputDecoration(labelText: loc.garageAddressLabel, border: const OutlineInputBorder(), filled: true, fillColor: AppColors.adaptiveCard(Theme.of(context).brightness)),
               validator: (v) => v == null || v.trim().isEmpty ? loc.garageAddressRequired : null,
               maxLines: 2,
             ),
             const SizedBox(height: 12),
             TextFormField(
               controller: _descCtrl,
-              decoration: InputDecoration(labelText: loc.descriptionLabel, border: const OutlineInputBorder()),
+              decoration: InputDecoration(labelText: loc.descriptionLabel, border: const OutlineInputBorder(), filled: true, fillColor: AppColors.adaptiveCard(Theme.of(context).brightness)),
               maxLines: 3,
             ),
             const SizedBox(height: 12),
             TextFormField(
               controller: _hoursCtrl,
-              decoration: InputDecoration(labelText: loc.garageWorkingHoursLabel, hintText: loc.garageWorkingHoursHint, border: const OutlineInputBorder()),
+              decoration: InputDecoration(labelText: loc.garageWorkingHoursLabel, hintText: loc.garageWorkingHoursHint, border: const OutlineInputBorder(), filled: true, fillColor: AppColors.adaptiveCard(Theme.of(context).brightness)),
             ),
             const SizedBox(height: 20),
             SizedBox(
@@ -113,7 +115,7 @@ class _EditGarageScreenState extends State<EditGarageScreen> {
                 onPressed: provider.isLoading ? null : _save,
                 icon: const Icon(Icons.save, color: Colors.white),
                 label: Text(provider.isLoading ? loc.savingInProgress : loc.saveChanges, style: const TextStyle(color: Colors.white)),
-                style: ElevatedButton.styleFrom(backgroundColor: Colors.blue, padding: const EdgeInsets.symmetric(vertical: 14)),
+                style: ElevatedButton.styleFrom(backgroundColor: AppColors.darkOrange, padding: const EdgeInsets.symmetric(vertical: 14)),
               ),
             ),
           ],
@@ -138,7 +140,7 @@ class _EditGarageScreenState extends State<EditGarageScreen> {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(ok ? loc.garageUpdatedSuccess : provider.error ?? loc.garageUpdateFailed),
-        backgroundColor: ok ? Colors.green : Colors.red,
+        backgroundColor: ok ? AppColors.success : AppColors.error,
       ),
     );
 

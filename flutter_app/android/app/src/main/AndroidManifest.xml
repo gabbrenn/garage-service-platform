@@ -10,7 +10,8 @@
     <application
         android:label="garage_service_app"
         android:name="${applicationName}"
-        android:icon="@mipmap/ic_launcher">
+        android:icon="@mipmap/ic_launcher"
+        android:enableOnBackInvokedCallback="true">
         <activity
             android:name=".MainActivity"
             android:exported="true"
@@ -41,9 +42,9 @@
         <meta-data android:name="com.google.firebase.messaging.default_notification_channel_id"
             android:value="garage_service_events" />
             
-        <!-- Google Maps API Key -->
-        <meta-data android:name="com.google.android.geo.API_KEY"
-                   android:value="AIzaSyBSMC1p4tjP3YW_O8nZn9qtw-aHrFu7OUc"/>
+    <!-- Google Maps API Key: use Gradle manifestPlaceholder if provided, else fallback -->
+    <meta-data android:name="com.google.android.geo.API_KEY"
+           android:value="${MAPS_API_KEY}"/>
     </application>
     <!-- Required to query activities that can process text, see:
          https://developer.android.com/training/package-visibility and

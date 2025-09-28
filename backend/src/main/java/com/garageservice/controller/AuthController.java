@@ -22,6 +22,8 @@ import java.util.Map;
 import java.util.List;
 import java.util.UUID;
 import java.time.LocalDateTime;
+import org.springframework.beans.factory.annotation.Value;
+import com.garageservice.service.EmailService;
 
 @CrossOrigin(origins = "*", maxAge = 3600)
 @RestController
@@ -38,6 +40,12 @@ public class AuthController {
 
     @Autowired
     JwtUtils jwtUtils;
+
+    @Autowired
+    EmailService emailService;
+
+    @Value("${app.mail.reset.base-url:https://example.com/reset-password}")
+    private String resetBaseUrl;
 
     @PostMapping("/signin")
     public ResponseEntity<?> authenticateUser(@Valid @RequestBody AuthRequest loginRequest) {
@@ -136,11 +144,23 @@ public class AuthController {
         user.setResetTokenExpiry(LocalDateTime.now().plusHours(1));
         userRepository.save(user);
 
-        // In production, send email with link containing token. For now, return token for testing.
-        return ResponseEntity.ok(Map.of(
-                "message", "Password reset token generated",
-                "resetToken", token
-        ));
+    // Send reset email (do not reveal account existence in response)
+    try {
+        String link = resetBaseUrl + "?token=" + token;
+        String subject = "Reset your password";
+        String text = "Hello " + user.getFirstName() + ",\n\n" +
+            "We received a request to reset your password.\n" +
+            "Use the link below to set a new password (valid for 1 hour):\n" +
+            link + "\n\n" +
+            "If you didn't request this, you can ignore this email.";
+        String html = "<p>Hello " + user.getFirstName() + ",</p>" +
+            "<p>We received a request to reset your password.</p>" +
+            "<p><a href='" + link + "'>Click here to set a new password</a> (valid for 1 hour).</p>" +
+            "<p>If you didn't request this, you can ignore this email.</p>";
+        emailService.sendHtml(user.getEmail(), subject, html);
+    } catch (Exception ignore) {}
+
+    return ResponseEntity.ok(Map.of("message", "If an account exists, a reset email has been sent"));
     }
 
     @PostMapping("/reset-password")
