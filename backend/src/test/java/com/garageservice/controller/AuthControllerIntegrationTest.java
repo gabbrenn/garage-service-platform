@@ -2,6 +2,7 @@ package com.garageservice.controller;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.garageservice.repository.UserRepository;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -26,7 +27,10 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
         // Shorten JWT expirations for tests if needed
         "app.jwtSecret=testSecretKeyThatIsLongEnoughForHS256",
         "app.jwtExpirationMs=60000",
-        "app.jwtRefreshExpirationMs=120000"
+        "app.jwtRefreshExpirationMs=120000",
+        // Disable external email sending during tests
+        "app.mail.provider=noop",
+        "app.mail.enabled=false"
 })
 class AuthControllerIntegrationTest {
 
@@ -35,6 +39,9 @@ class AuthControllerIntegrationTest {
 
     @Autowired
     private ObjectMapper objectMapper;
+
+        @Autowired
+        private UserRepository userRepository;
 
     private String asJson(Object o) throws Exception {
         return objectMapper.writeValueAsString(o);
@@ -78,8 +85,13 @@ class AuthControllerIntegrationTest {
                 .andExpect(status().isOk())
                 .andReturn();
         JsonNode forgotJson = objectMapper.readTree(forgot.getResponse().getContentAsString());
-        assertThat(forgotJson.has("resetToken")).isTrue();
-        String token = forgotJson.get("resetToken").asText();
+        // New behavior: do not expose token in API response
+        assertThat(forgotJson.has("resetToken")).isFalse();
+        // Retrieve the token from the database (what the email would contain)
+        var userOpt = userRepository.findByEmail("jane@example.com");
+        assertThat(userOpt).isPresent();
+        var user = userOpt.get();
+        String token = user.getResetToken();
         assertThat(token).isNotBlank();
 
         // 3) Reset password using token

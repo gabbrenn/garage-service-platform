@@ -80,6 +80,12 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                     : Text(loc.sendResetLink),
               ),
             ),
+            const SizedBox(height: 8),
+            // Allow user to go enter the code they received by email
+            TextButton(
+              onPressed: () => Navigator.pushNamed(context, '/reset-password'),
+              child: const Text('Enter reset code'),
+            ),
             if (_resultToken != null) ...[
               const SizedBox(height: 12),
               Text('${loc.devResetToken}: $_resultToken', style: const TextStyle(fontSize: 12, color: AppColors.textSecondary)),

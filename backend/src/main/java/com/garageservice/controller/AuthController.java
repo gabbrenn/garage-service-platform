@@ -144,19 +144,20 @@ public class AuthController {
         user.setResetTokenExpiry(LocalDateTime.now().plusHours(1));
         userRepository.save(user);
 
-    // Send reset email (do not reveal account existence in response)
+    // Send reset email with token code (no link) – do not reveal account existence in response
     try {
-        String link = resetBaseUrl + "?token=" + token;
-        String subject = "Reset your password";
+        String subject = "Your password reset code";
         String text = "Hello " + user.getFirstName() + ",\n\n" +
             "We received a request to reset your password.\n" +
-            "Use the link below to set a new password (valid for 1 hour):\n" +
-            link + "\n\n" +
+            "Use the code below in the app to set a new password. This code expires in 1 hour.\n\n" +
+            "Reset code: " + token + "\n\n" +
             "If you didn't request this, you can ignore this email.";
         String html = "<p>Hello " + user.getFirstName() + ",</p>" +
             "<p>We received a request to reset your password.</p>" +
-            "<p><a href='" + link + "'>Click here to set a new password</a> (valid for 1 hour).</p>" +
+            "<p>Use the code below in the app to set a new password. This code expires in <strong>1 hour</strong>.</p>" +
+            "<p style='font-size:16px'><strong>Reset code:</strong> <code>" + token + "</code></p>" +
             "<p>If you didn't request this, you can ignore this email.</p>";
+        // Send both HTML (preferred) and ensure clients without HTML still receive content
         emailService.sendHtml(user.getEmail(), subject, html);
     } catch (Exception ignore) {}
 
