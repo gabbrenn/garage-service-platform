@@ -43,6 +43,17 @@ class LanguagePickerSheet extends StatelessWidget {
               }
             },
           ),
+          RadioListTile<String>(
+            title: const Text('Kinyarwanda'),
+            value: 'rw',
+            groupValue: current,
+            onChanged: (v) {
+              if (v != null) {
+                langProvider.setLocale(const Locale('rw'));
+                Navigator.pop(context);
+              }
+            },
+          ),
           const SizedBox(height: 8),
         ],
       ),
