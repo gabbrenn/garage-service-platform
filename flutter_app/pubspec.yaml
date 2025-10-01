@@ -38,6 +38,14 @@ dev_dependencies:
     sdk: flutter
 
   flutter_lints: ^6.0.0
+  flutter_launcher_icons: ^0.13.1
+
+flutter_icons:
+  android: true
+  ios: false
+  image_path_android: "appIcon.png"
+  adaptive_icon_foreground: "appIcon.png"
+  adaptive_icon_background: "#FFFFFF"
 
 
 # The following section is specific to Flutter packages.
