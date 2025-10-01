@@ -22,7 +22,7 @@ class LanguagePickerSheet extends StatelessWidget {
             ),
           ),
           RadioListTile<String>(
-            title: const Text('English'),
+            title: Text(loc.languageEnglish),
             value: 'en',
             groupValue: current,
             onChanged: (v) {
@@ -33,7 +33,7 @@ class LanguagePickerSheet extends StatelessWidget {
             },
           ),
           RadioListTile<String>(
-            title: const Text('Français'),
+            title: Text(loc.languageFrench),
             value: 'fr',
             groupValue: current,
             onChanged: (v) {
@@ -44,7 +44,7 @@ class LanguagePickerSheet extends StatelessWidget {
             },
           ),
           RadioListTile<String>(
-            title: const Text('Kinyarwanda'),
+            title: Text(loc.languageKinyarwanda),
             value: 'rw',
             groupValue: current,
             onChanged: (v) {

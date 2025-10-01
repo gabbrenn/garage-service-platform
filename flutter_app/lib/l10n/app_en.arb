@@ -13,6 +13,9 @@
   "garageDashboard": "Garage Dashboard",
   "language": "Language",
   "chooseLanguage": "Choose Language"
+  ,"languageEnglish": "English"
+  ,"languageFrench": "French"
+  ,"languageKinyarwanda": "Kinyarwanda"
   ,"findGarages": "Find Garages"
   ,"list": "List"
   ,"map": "Map"
