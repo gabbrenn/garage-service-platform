@@ -313,4 +313,9 @@
   ,"themeLight": "Clair"
   ,"themeDark": "Sombre"
   ,"applyButton": "Appliquer"
+  ,"accountSection": "Compte"
+  ,"deleteAccount": "Supprimer le compte"
+  ,"deleteAccountWarning": "Cela supprimera définitivement votre compte et les données associées. Cette action est irréversible."
+  ,"deleteAccountConfirm": "Voulez-vous vraiment supprimer définitivement votre compte ?"
+  ,"accountDeleted": "Votre compte a été supprimé"
 }

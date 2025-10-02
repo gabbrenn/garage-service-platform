@@ -3,9 +3,12 @@ import 'package:provider/provider.dart';
 import '../../providers/theme_provider.dart';
 import '../../theme/app_colors.dart';
 import '../../l10n/gen/app_localizations.dart';
+import '../../services/api_service.dart';
+import '../../providers/auth_provider.dart';
 
 class SettingsScreen extends StatefulWidget {
-  const SettingsScreen({super.key});
+  final Future<bool> Function()? deleteAccount;
+  const SettingsScreen({super.key, this.deleteAccount});
 
   @override
   State<SettingsScreen> createState() => _SettingsScreenState();
@@ -68,6 +71,75 @@ class _SettingsScreenState extends State<SettingsScreen> {
                         backgroundColor: AppColors.darkOrange,
                         foregroundColor: Colors.white,
                       ),
+                    ),
+                  )
+                ],
+              ),
+            ),
+          ),
+          const SizedBox(height: 24),
+          Text(loc.accountSection, style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold)),
+          const SizedBox(height: 12),
+          Card(
+            elevation: 2,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            child: Padding(
+              padding: const EdgeInsets.all(12),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(loc.deleteAccountWarning, style: Theme.of(context).textTheme.bodyMedium),
+                  const SizedBox(height: 12),
+                  Align(
+                    alignment: Alignment.centerRight,
+                    child: ElevatedButton.icon(
+                      key: const Key('deleteAccountButton'),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.red.shade700,
+                        foregroundColor: Colors.white,
+                      ),
+                      onPressed: () async {
+                        final confirmed = await showDialog<bool>(
+                          context: context,
+                          builder: (ctx) => AlertDialog(
+                            title: Text(loc.deleteAccount),
+                            content: Text(loc.deleteAccountConfirm),
+                            actions: [
+                              TextButton(onPressed: () => Navigator.of(ctx).pop(false), child: Text(loc.cancel)),
+                              TextButton(
+                                onPressed: () => Navigator.of(ctx).pop(true),
+                                child: Text(loc.delete, style: const TextStyle(color: Colors.red)),
+                              ),
+                            ],
+                          ),
+                        );
+                        if (confirmed != true) return;
+                        try {
+                          // Best-effort: call backend to delete account, then log out locally
+                          final fn = widget.deleteAccount ?? ApiService.deleteAccount;
+                          final ok = await fn();
+                          if (ok) {
+                            if (mounted) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(content: Text(loc.accountDeleted)),
+                              );
+                            }
+                            // Perform full logout and navigate to login
+                            try { await context.read<AuthProvider>().logout(context); } catch(_) {}
+                            if (mounted) {
+                              Navigator.of(context).pushNamedAndRemoveUntil('/login', (route) => false);
+                            }
+                          }
+                        } catch (e) {
+                          if (mounted) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(content: Text('${loc.genericError}: $e')),
+                            );
+                          }
+                        }
+                      },
+                      icon: const Icon(Icons.delete_forever),
+                      label: Text(loc.deleteAccount),
                     ),
                   )
                 ],

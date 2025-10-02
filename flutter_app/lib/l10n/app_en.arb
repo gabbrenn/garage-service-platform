@@ -313,4 +313,9 @@
   ,"themeLight": "Light"
   ,"themeDark": "Dark"
   ,"applyButton": "Apply"
+    ,"accountSection": "Account"
+    ,"deleteAccount": "Delete Account"
+    ,"deleteAccountWarning": "This will permanently delete your account and related data. This action cannot be undone."
+    ,"deleteAccountConfirm": "Are you sure you want to permanently delete your account?"
+    ,"accountDeleted": "Your account has been deleted"
 }

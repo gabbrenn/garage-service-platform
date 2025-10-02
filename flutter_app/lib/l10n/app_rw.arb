@@ -314,5 +314,10 @@
   "themeSystem": "Sisitemu",
   "themeLight": "Urumuri",
   "themeDark": "Igicucu",
-  "applyButton": "Shyira mu bikorwa"
+  "applyButton": "Shyira mu bikorwa",
+  "accountSection": "Konti",
+  "deleteAccount": "Siba Konti",
+  "deleteAccountWarning": "Ibi bizasiba burundu konti yawe n'ibiyifitanye isano. Ntibishobora gusubizwa inyuma.",
+  "deleteAccountConfirm": "Uremeza ko ushaka gusiba burundu konti yawe?",
+  "accountDeleted": "Konti yawe yasibwe"
 }

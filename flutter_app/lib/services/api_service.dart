@@ -680,6 +680,15 @@ class ApiService {
     return resp;
   }
 
+  // ---------------- Account endpoints ----------------
+  static Future<bool> deleteAccount() async {
+    final resp = await _httpDelete(Uri.parse('$baseUrl/account'));
+    if (resp.statusCode == 200 || resp.statusCode == 204) {
+      return true;
+    }
+    throw Exception('Failed to delete account: ${resp.statusCode} ${resp.body}');
+  }
+
   static Future<http.Response> _attemptRefreshAndRetry(Future<http.Response> Function() retryFn) async {
     final ok = await _refreshAccessToken();
     if(!ok){
